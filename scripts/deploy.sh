@@ -20,6 +20,7 @@ elif [ $1 == "web" ]
                 source /opt/poster-app/virtualenv/bin/activate
                 cd /opt/poster-app/src; python manage.py collectstatic -c; python manage.py migrate --noinput
                 chown poster-app:poster-app /opt/poster-app/src -R
+                touch /opt/poster-app/version.py
         elif [ $2 == "django" ]
             then
                 echo "Running django command"
