@@ -7,7 +7,7 @@ elif [ $1 == "web" ]
     then
         if [[ -z $2 ]]
             then
-                cd darksheep;git pull; cd -;
+                git pull
                 echo "Running dry-run"
                 rsync --dry-run -az --force --delete --progress --exclude-from=deploy_exclude.txt ../src/ /opt/poster-app/src
         elif [ $2 == "go" ]
