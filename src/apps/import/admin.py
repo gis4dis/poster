@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import Provider, ProviderLog, ReadonlyProviderLog
 
 
-class FieldsMixin:
+class FieldsMixin(object):
 
     def add_view(self, request, form_url='', extra_context=None):
         try:
