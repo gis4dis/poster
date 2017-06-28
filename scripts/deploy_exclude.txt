@@ -4,6 +4,7 @@
 .env.example
 
 local_settings.py
+wsgi.py
 
 db.sqlite3
 /static
