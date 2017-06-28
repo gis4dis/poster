@@ -12,7 +12,7 @@ Clone the repository
 
 ## git clone
 ```
-git clone --recursive https://github.com/gis4dis/poster poster
+git clone https://github.com/gis4dis/poster poster
 cd poster
 ```
 
