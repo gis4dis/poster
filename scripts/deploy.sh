@@ -1,4 +1,4 @@
-ERRORSTRING="Usage: ./deploy web [go|manage]"
+ERRORSTRING="Usage: ./deploy web [go|manage|django]"
 
 if [ $# -eq 0 ]
     then
@@ -20,6 +20,13 @@ elif [ $1 == "web" ]
                 source /opt/poster-app/virtualenv/bin/activate
                 cd /opt/poster-app/src; python manage.py collectstatic -c; python manage.py migrate --noinput
                 chown poster-app:poster-app /opt/poster-app/src -R
+        elif [ $2 == "django" ]
+            then
+                echo "Running django command"
+                source /opt/poster-app/virtualenv/bin/activate
+                cd /opt/poster-app/src
+                python manage.py $3
+
         else
             echo $ERRORSTRING;
         fi

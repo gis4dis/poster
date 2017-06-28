@@ -46,7 +46,7 @@ class ProviderLog(models.Model):
     Provider Log entry that corresponds with every entry (POST Request) that is sent to the server
     """
     provider = models.ForeignKey(Provider)
-    is_valid = models.BooleanField(default=False, editable=False)
+    is_valid = models.BooleanField(default=False)
     content_type = models.CharField(max_length=32, default="application/txt")
     body = models.TextField(null=False, blank=True)
     file_name = models.CharField(max_length=32)
@@ -59,3 +59,8 @@ class ProviderLog(models.Model):
 
     def __str__(self):
         return force_text(u"{provider} | <{received}>".format(provider=self.provider, received=self.received_time))
+
+
+class ReadonlyProviderLog(ProviderLog):
+    class Meta:
+        proxy = True
