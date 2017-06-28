@@ -132,6 +132,11 @@ Now you can run manage script:
 
 This will copy staticfiles to correct directory and prepare database.
 
+If you are using sqlite, check the database file has correct owner:
+```
+chown poster-app:poster-app /opt/poster-app/db.sqlite3
+```
+
 ### 4) Final touches
 
 Create import folder by default in /opt/poster-app/import and set proper chown. 
