@@ -31,7 +31,6 @@ class Provider(models.Model):
                 '<a href={url}>{url}</span>',
                 url=url,
             )
-            return "-"
         else:
             return "-"
     url.short_description = "example URL for provider"
@@ -55,13 +54,17 @@ class ProviderLog(models.Model):
     received_time = models.DateTimeField(default=timezone.now)
     uuid4 = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
 
-    is_processed = models.BooleanField(default=False)
+    last_processed = models.DateTimeField(null=True, blank=True, default=None)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return force_text(u"{provider} | <{received}>".format(provider=self.provider, received=self.received_time))
+
+    def is_processed(self):
+        return self.last_processed is not None
+    is_processed.short_description = "Was the Log already processed?"
 
 
 class ReadonlyProviderLog(ProviderLog):
