@@ -1,6 +1,7 @@
 import os
 import stat
 import codecs
+import uuid
 
 from django.core.exceptions import MultipleObjectsReturned
 from django.http import HttpResponse
@@ -47,6 +48,7 @@ class ImportView(View):
         year = str(now.strftime("%Y"))
         month = str(now.strftime("%m"))
         now_str = str(now.strftime("%Y%m%d-%H%M%S"))
+        uuid4 = uuid.uuid4()
 
         # TODO: replace/pass this stuff to celery for BG processing
 
@@ -65,9 +67,9 @@ class ImportView(View):
             #
             file_dir_path = os.path.join(IMPORT_ROOT, code, year, month)
 
-            # Generate filename: <%Y%m%d-%H%M%S>_(valid|invalid)_<file_name>.<ext>
-            # Example:           20171231-235959_valid_data.xml
-            full_file_name = now_str + "_" + is_valid_string + "_" + file_name + "." + ext
+            # Generate filename: <%Y%m%d-%H%M%S>_(valid|invalid)_<file_name>_<uuid4>.<ext>
+            # Example:           20171231-235959_valid_data_e6911354-2f49-40d3-827d-43a5015a673b.xml
+            full_file_name = now_str + "_" + is_valid_string + "_" + file_name + "_" + str(uuid4) + "." + ext
 
             # Join paths
             file_path = os.path.join(file_dir_path, full_file_name)

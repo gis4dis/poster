@@ -53,6 +53,9 @@ class ProviderLog(models.Model):
     file_path = models.CharField(max_length=256)
     ext = models.CharField(max_length=16)
     received_time = models.DateTimeField(default=timezone.now)
+    uuid4 = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+
+    is_processed = models.BooleanField(default=False)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
