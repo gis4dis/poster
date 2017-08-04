@@ -132,8 +132,7 @@
                         <div class="bar" style="height:{{x.pct}}%">
                             <div class="bar-tooltip">
                                 Count: {{x.total | default:0 | intcomma }}<br>
-                                Percent: {{x.pct}}%<br>
-                                Precise date: {{x.period | date:"d. m. Y H:m:s"}}
+                                {{ x.total|default:0|percentof:summary_total.total }} of total<br>
                             </div>
                             <div class="bar-desc">
                                 {% if period == 'hour' %}

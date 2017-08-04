@@ -112,15 +112,17 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
             'total': Count('id'),
         }
 
-        response.context_data['summary'] = list(
+        summary = list(
             qs.values('provider__name')
               .annotate(**metrics)
               .order_by('-total')
         )
+        response.context_data['summary'] = summary
 
-        response.context_data['summary_total'] = dict(
+        summary_total = dict(
             qs.aggregate(**metrics)
         )
+        response.context_data['summary_total'] = summary_total
 
         period = get_next_in_date_hierarchy(
             request,
