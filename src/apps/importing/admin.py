@@ -69,7 +69,8 @@ class ProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     list_display = ['provider', 'content_type', 'received_time', 'is_valid', ]
     list_filter = ['provider__name', 'content_type', 'received_time', 'is_valid', ]
 
-    fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid', ]
+    fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid',  'uuid4',]
+    readonly_fields = ['uuid4',]
 
 
 # https://medium.com/@hakibenita/how-to-turn-django-admin-into-a-lightweight-dashboard-a0e0bbf609ad
@@ -81,12 +82,12 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     list_display = ['provider', 'content_type', 'received_time', 'is_valid', ]
     list_filter = ['received_time', 'provider__name', 'content_type', 'is_valid', ]
 
-    default_fields = ['provider', 'content_type', 'body', 'file_name', 'file_path', 'ext', 'received_time', 'is_valid', ]
+    default_fields = ['provider', 'content_type', 'body', 'file_name', 'file_path', 'ext', 'received_time', 'is_valid', 'uuid4']
     default_readonly_fields = []
 
     add_fields = ['provider', 'content_type', 'body', 'file_name', 'ext', 'received_time', 'is_valid', ]
-    change_fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid', ]
-    change_readonly_fields = ['provider', 'content_type', 'body', 'file_name', 'ext', 'file_path', 'received_time', 'is_valid', ]
+    change_fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid', 'uuid4',]
+    change_readonly_fields = ['provider', 'content_type', 'body', 'file_name', 'ext', 'file_path', 'received_time', 'is_valid', 'uuid4',]
 
     def stats_view(self, request, extra_context=None):
 
