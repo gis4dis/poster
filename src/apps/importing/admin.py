@@ -97,7 +97,7 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
             if date_hierarchy + '__month' in request.GET:
                 return 'day'
             if date_hierarchy + '__year' in request.GET:
-                return 'week'
+                return 'month'
             return 'month'
 
         response = self.changelist_view(request, extra_context)
@@ -146,7 +146,6 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
 
         high = summary_range.get('high', 0)
         low = summary_range.get('low', 0)
-        print(high, low)
 
         response.context_data['summary_over_time'] = [
             {
@@ -156,8 +155,6 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
                     ((x['total'] or 0) / high) * 100
                     if high > low else 100,
             } for x in summary_over_time]
-
-        print(response.context_data['summary_over_time'])
 
         return response
 
