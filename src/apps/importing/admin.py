@@ -154,7 +154,7 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
                 'total': x['total'] or 0,
                 'pct':
                     ((x['total'] or 0) / high) * 100
-                    if high > low else 0,
+                    if high > low else 100,
             } for x in summary_over_time]
 
         print(response.context_data['summary_over_time'])
