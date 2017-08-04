@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('import', '0001_initial'),
+        ('importing', '0001_initial'),
     ]
 
     operations = [
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 'indexes': [],
                 'proxy': True,
             },
-            bases=('import.providerlog',),
+            bases=('importing.providerlog',),
         ),
         migrations.AlterField(
             model_name='providerlog',

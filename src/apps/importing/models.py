@@ -19,7 +19,7 @@ class Provider(models.Model):
     def url(self):
         if self.pk is not None:
             url = reverse(
-                    'import:provider',
+                    'importing:provider',
                     kwargs={
                         'code': self.code,
                         'token': str(self.token),

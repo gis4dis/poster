@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('received_time', models.DateTimeField(default=django.utils.datetime_safe.datetime.now)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
-                ('provider', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='import.Provider')),
+                ('provider', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='importing.Provider')),
             ],
         ),
     ]

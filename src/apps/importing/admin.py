@@ -1,4 +1,8 @@
+from functools import update_wrapper
+
 from django.contrib import admin
+from django.db.models import Count, DateTimeField, Min, Max
+from django.db.models.functions import Trunc
 
 from .models import Provider, ProviderLog, ReadonlyProviderLog
 
@@ -68,9 +72,14 @@ class ProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid', ]
 
 
+# https://medium.com/@hakibenita/how-to-turn-django-admin-into-a-lightweight-dashboard-a0e0bbf609ad
+# Wonderful way to add some graphs :)
 class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
+    change_list_template = 'admin/readonly_provider_change_list.html'
+    date_hierarchy = 'received_time'
+
     list_display = ['provider', 'content_type', 'received_time', 'is_valid', ]
-    list_filter = ['provider__name', 'content_type', 'received_time', 'is_valid', ]
+    list_filter = ['received_time', 'provider__name', 'content_type', 'is_valid', ]
 
     default_fields = ['provider', 'content_type', 'body', 'file_name', 'file_path', 'ext', 'received_time', 'is_valid', ]
     default_readonly_fields = []
@@ -78,6 +87,97 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     add_fields = ['provider', 'content_type', 'body', 'file_name', 'ext', 'received_time', 'is_valid', ]
     change_fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid', ]
     change_readonly_fields = ['provider', 'content_type', 'body', 'file_name', 'ext', 'file_path', 'received_time', 'is_valid', ]
+
+    def stats_view(self, request, extra_context=None):
+
+        def get_next_in_date_hierarchy(request, date_hierarchy):
+            if date_hierarchy + '__day' in request.GET:
+                return 'hour'
+            if date_hierarchy + '__month' in request.GET:
+                return 'day'
+            if date_hierarchy + '__year' in request.GET:
+                return 'week'
+            return 'month'
+
+        response = self.changelist_view(request, extra_context)
+        response.template_name = 'admin/readonly_provider_log_summary_change_list.html'
+
+        try:
+            qs = response.context_data['cl'].queryset
+        except (AttributeError, KeyError):
+            return response
+
+        metrics = {
+            'total': Count('id'),
+        }
+
+        response.context_data['summary'] = list(
+            qs.values('provider__name')
+              .annotate(**metrics)
+              .order_by('-total')
+        )
+
+        response.context_data['summary_total'] = dict(
+            qs.aggregate(**metrics)
+        )
+
+        period = get_next_in_date_hierarchy(
+            request,
+            self.date_hierarchy,
+        )
+        response.context_data['period'] = period
+
+        summary_over_time = qs.annotate(
+            period=Trunc(
+                'received_time',
+                period,
+                output_field=DateTimeField(),
+            ),
+        )\
+            .values('period')\
+            .annotate(total=Count('id'))\
+            .order_by('period')
+
+        summary_range = summary_over_time.aggregate(
+            low=Min('total'),
+            high=Max('total'),
+        )
+
+        high = summary_range.get('high', 0)
+        low = summary_range.get('low', 0)
+        print(high, low)
+
+        response.context_data['summary_over_time'] = [
+            {
+                'period': x['period'],
+                'total': x['total'] or 0,
+                'pct':
+                    ((x['total'] or 0) / high) * 100
+                    if high > low else 0,
+            } for x in summary_over_time]
+
+        print(response.context_data['summary_over_time'])
+
+        return response
+
+    def get_urls(self):
+        urlpatterns = super(ReadonlyProviderLogAdmin, self).get_urls()
+
+        from django.conf.urls import url
+
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+
+        urlpatterns = [
+            url(r'^statistics/$', wrap(self.stats_view), name='%s_%s_statistics' % info),
+        ] + urlpatterns
+        return urlpatterns
 
 
 admin.site.register(Provider, ProviderAdmin)

@@ -5,12 +5,19 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import uuid
 
+from apps.importing.models import ProviderLog
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('import', '0002_auto_20170628_2316'),
+        ('importing', '0002_auto_20170628_2316'),
     ]
+
+    # def gen_uuid(apps, schema_editor):
+    #     for row in ProviderLog.objects.all():
+    #         row.uuid4 = uuid.uuid4()
+    #         row.save()
 
     operations = [
         migrations.AddField(
@@ -18,6 +25,9 @@ class Migration(migrations.Migration):
             name='last_processed',
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
+        #
+        # migrations.RunPython(gen_uuid),
+        #
         migrations.AddField(
             model_name='providerlog',
             name='uuid4',
