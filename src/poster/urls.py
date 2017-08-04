@@ -21,5 +21,5 @@ urlpatterns = [
     # url(r'^admin/', include('apps.importing.admin_urls')),
     url(r'^admin/', admin.site.urls),
 
-    url(r'^importing/', include('apps.importing.urls')),
+    url(r'^import/', include('apps.importing.urls')),
 ]
