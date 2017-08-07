@@ -2,6 +2,6 @@ from __future__ import absolute_import, unicode_literals
 from celery.task import task
 
 
-@task(name="print_debug")
+@task(name="processing.general.print_debug")
 def print_debug(text):
     print(text)

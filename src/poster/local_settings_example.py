@@ -28,7 +28,7 @@ DATABASES = {
     }
 }
 
-CELERY_BROKER_URL = 'amqp://admin:admin@192.168.49.50:5672//'
+CELERY_BROKER_URL = 'amqp://admin:admin@192.168.49.50:5672/processing'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 
 
