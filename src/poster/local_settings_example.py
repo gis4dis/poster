@@ -19,10 +19,18 @@ ADMINS = [('John', 'john@example.com'), ('Mary', 'mary@example.com')]
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'gateway_db',
+        'USER': 'gateway_user',
+        'PASSWORD': 'supersecure',
+        'HOST': '192.168.49.49',
+        'PORT': '5432',
     }
 }
+
+CELERY_BROKER_URL = 'amqp://admin:admin@192.168.49.50:5672//'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/tmp/poster-app'

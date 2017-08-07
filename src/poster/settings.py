@@ -25,7 +25,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
+    'django_celery_beat',
+    'django_celery_results',
+
     'apps.importing',
+    'apps.processing',
 ]
 
 MIDDLEWARE = [
@@ -94,6 +98,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Custom configuration for importing of data
 ALLOWED_EXTENSIONS = ['json', 'xml', 'txt']
+
+# Celery configuration
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+# URL BROKER CONFIG IS IN LOCAL_SETTING !!!
 
 from .local_settings import *

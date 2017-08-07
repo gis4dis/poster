@@ -83,6 +83,10 @@ You don't want to use git as primary source for your deployment. Generally it is
 a good practise to expose your .git folder (although the git is publicly available). 
 **2.5) deploy**
 
+```
+sudo su poster-app
+```
+
 ### 1) Clone repository
 Ideally clone the application into `/opt/poster-app/poster` directory so you can use 
 included deployment script (`scripts/deploy.sh`). 
@@ -164,4 +168,35 @@ And as last thing we create touch-to-update file, which when touched will reload
 the uwsgi with the new content.
 ```
 touch /opt/poster-app/version.py
+```
+
+# Summary
+```
+sudo su poster-app
+source /opt/poster-app/virtualenv/bin/activate
+
+git clone https://github.com/gis4dis/poster /opt/poster-app/poster
+cd /opt/poster-app/poster/scripts/
+
+pip install -r /opt/poster-app/poster/requirements.txt
+
+./deploy.sh web
+./deploy.sh web go
+
+cp /opt/poster-app/src/poster/local_settings{_example,}.py
+vim /opt/poster-app/src/poster/local_settings.py
+
+
+./deploy.sh web manage
+
+mkdir /opt/poster-app/import
+chown poster-app:poster-app /opt/poster-app/import
+chmod 0770 /opt/poster-app/import
+
+rm /opt/poster-app/src/wsgi.py
+ln -s /opt/poster-app/src/poster/wsgi.py /opt/poster-app/src/wsgi.py
+chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h 
+
+touch /opt/poster-app/version.py
+
 ```
