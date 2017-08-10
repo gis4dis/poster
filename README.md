@@ -178,7 +178,7 @@ source /opt/poster-app/virtualenv/bin/activate
 git clone https://github.com/gis4dis/poster /opt/poster-app/poster
 cd /opt/poster-app/poster/scripts/
 
-pip install -r /opt/poster-app/poster/requirements.txt
+pip install -r /opt/poster-app/src/requirements.txt
 
 ./deploy.sh web
 ./deploy.sh web go
@@ -204,8 +204,12 @@ touch /opt/poster-app/version.py
 # Summary v2
 
 ```
+vagrant up
+vagrant reload
+vagrant ssh
+
 sudo su poster-app
-pip install -r /opt/poster-app/poster/requirements.txt
+pip install -r /opt/poster-app/src/requirements.txt
 
 cp /opt/poster-app/src/poster/local_settings{_example,}.py
 vim /opt/poster-app/src/poster/local_settings.py
@@ -218,4 +222,8 @@ rm /opt/poster-app/src/wsgi.py
 ln -s /opt/poster-app/src/poster/wsgi.py /opt/poster-app/src/wsgi.py
 chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h
 
+cd /opt/poster-app/src/
+
+python manage.py migrate
+python manage.py collectstatic
 touch /opt/poster-app/version.py

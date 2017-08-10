@@ -2,6 +2,7 @@
 /import/
 
 src/db.sqlite3
+src/wsgi.py
 local_settings.py
 .idea/
 
