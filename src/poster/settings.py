@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django_celery_results',
 
     'apps.importing',
-    'apps.processing',
+    'apps.processing.ala',
 ]
 
 MIDDLEWARE = [

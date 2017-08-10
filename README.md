@@ -200,3 +200,22 @@ chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h
 touch /opt/poster-app/version.py
 
 ```
+
+# Summary v2
+
+```
+sudo su poster-app
+pip install -r /opt/poster-app/poster/requirements.txt
+
+cp /opt/poster-app/src/poster/local_settings{_example,}.py
+vim /opt/poster-app/src/poster/local_settings.py
+
+mkdir /opt/poster-app/import
+chown poster-app:poster-app /opt/poster-app/import
+chmod 0770 /opt/poster-app/import
+
+rm /opt/poster-app/src/wsgi.py
+ln -s /opt/poster-app/src/poster/wsgi.py /opt/poster-app/src/wsgi.py
+chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h
+
+touch /opt/poster-app/version.py
