@@ -44,14 +44,14 @@ pip install -r requirements.txt
 This will install all required Python packages for the application.
 
 ### 3) configure `local_settings.py`
-Django has its basic configuration in file called `settings.py`. There is all the 
+Django has its basic configuration in file called `settings.py`. There is all the
 configuration for application. Most of the parts of the configuration can be used
-on all environments (local development, testing, production ...) But some parts 
+on all environments (local development, testing, production ...) But some parts
 are specific only for some environments (Logging, paths, etc.). Because of this
 there is second file you need to create called `local_settings.py`.
 
-There is a template `local_settings_example.py` which you can copy and use as 
-starting point. Actually for local development you can just copy the file and 
+There is a template `local_settings_example.py` which you can copy and use as
+starting point. Actually for local development you can just copy the file and
 make just minor changes.
 
 ```
@@ -78,9 +78,9 @@ python ./manage.py runserver
 
 ## Running the application on server (prepared by kickup)
 
-Here is one more step which includes deploying the source code from cloned git repo. 
+Here is one more step which includes deploying the source code from cloned git repo.
 You don't want to use git as primary source for your deployment. Generally it is not
-a good practise to expose your .git folder (although the git is publicly available). 
+a good practise to expose your .git folder (although the git is publicly available).
 **2.5) deploy**
 
 ```
@@ -88,8 +88,8 @@ sudo su poster-app
 ```
 
 ### 1) Clone repository
-Ideally clone the application into `/opt/poster-app/poster` directory so you can use 
-included deployment script (`scripts/deploy.sh`). 
+Ideally clone the application into `/opt/poster-app/poster` directory so you can use
+included deployment script (`scripts/deploy.sh`).
 Otherwise you need to update this scripts with proper PATHS.
 
 ```
@@ -98,7 +98,7 @@ git clone https://github.com/gis4dis/poster /opt/poster-app/poster
 
 ### 2) create and install Python 3 virtualenv
 
-The virtual environment is already prepared for this app in the folder 
+The virtual environment is already prepared for this app in the folder
 `/opt/poster-app/virtualenv`, so we don't need to install this by ourselves.
 
 
@@ -111,14 +111,14 @@ Deployment script has 3 basic functions.
   * This will run rsync and override/delete all the files listed previously
 * `./deploy web manage`
   * This command runs Django's collect static and migrate commands (interactively)
-  
+
 Now we need to run only first two, so run:
 ```
 ./deploy web
 ./deploy web go
 ```
 don't run `./deploy web manage` yet, since you need to configure the `local_settings.py` in next step
-  
+
 ### 3) configure local_settings.py
 Setup needed local_settings.py for custom properties on the server.
 Copy local_settings_example.py and update the values to fit the needs.
@@ -143,7 +143,7 @@ chown poster-app:poster-app /opt/poster-app/db.sqlite3
 
 ### 4) Final touches
 
-Create import folder by default in /opt/poster-app/import and set proper chown. 
+Create import folder by default in /opt/poster-app/import and set proper chown.
 (this should match the path you've set in `local_setting.py`)
 This folder will be used for imported data, so it also needs proper write access
 
@@ -161,10 +161,10 @@ so we make a symlink to required path
 ```
 rm /opt/poster-app/src/wsgi.py
 ln -s /opt/poster-app/src/poster/wsgi.py /opt/poster-app/src/wsgi.py
-chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h 
+chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h
 ```
 
-And as last thing we create touch-to-update file, which when touched will reload 
+And as last thing we create touch-to-update file, which when touched will reload
 the uwsgi with the new content.
 ```
 touch /opt/poster-app/version.py
@@ -195,7 +195,7 @@ chmod 0770 /opt/poster-app/import
 
 rm /opt/poster-app/src/wsgi.py
 ln -s /opt/poster-app/src/poster/wsgi.py /opt/poster-app/src/wsgi.py
-chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h 
+chown poster-app:poster-app /opt/poster-app/src/wsgi.py -h
 
 touch /opt/poster-app/version.py
 

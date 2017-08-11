@@ -4,3 +4,5 @@ celery==4.1.0
 django-celery-beat==1.0.1
 django-celery-results==1.0.1
 psycopg2==2.7.3
+requests==2.18.3
+python-dateutil==2.6.1
