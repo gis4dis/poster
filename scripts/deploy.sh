@@ -18,7 +18,7 @@ elif [ $1 == "web" ]
             then
                 echo "Running manage scripts"
                 source /opt/poster-app/virtualenv/bin/activate
-                cd /opt/poster-app/poster/src; pip install -r requirements.txt
+                cd /opt/poster-app/poster/src; pip install -r requirements.txt --user
                 cd /opt/poster-app/src; python manage.py collectstatic -c; python manage.py migrate --noinput
                 chown poster-app:poster-app /opt/poster-app/src -R
                 touch /opt/poster-app/version.py
