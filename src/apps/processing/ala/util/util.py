@@ -15,6 +15,8 @@ stations_def = [
     ('11359196',{'name': u'Brno, Kraví Hora'}),
     ('11359205',{'name': u'Brno, FF MU, Arne Nováka'}),
     ('11359192',{'name': u'Brno, Schodová'}),
+    ('11359202',{'name': u'Brno, Hroznová'}),
+    ('11359132',{'name': u'Brno, Mendlovo nám.'}),
 ]
 
 props_def = [
