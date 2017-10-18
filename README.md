@@ -7,6 +7,17 @@ Python 3.2+ due to folder creation.
 
 See https://docs.python.org/3/library/os.html#os.makedirs
 
+## notes
+
+Postgis extension is installed, but the database needs to be initialized with this extension. This can only be done as priviledged user (postgis). In this case you need to run:
+
+```
+sudo su postgres
+psql gateway_db
+
+CREATE EXTENSION postgis;
+```
+
 # Installation
 Installation differs in some parts if you want to run this on localhost or prod server.
 But it is standard Django application. So the steps are:
