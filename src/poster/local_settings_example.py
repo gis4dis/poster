@@ -19,7 +19,8 @@ ADMINS = [('John', 'john@example.com'), ('Mary', 'mary@example.com')]
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'gateway_db',
         'USER': 'gateway_user',
         'PASSWORD': 'supersecure',
