@@ -112,7 +112,7 @@ class Observation(models.Model):
         editable=False
     )
     result = models.DecimalField(
-        help_text="Numerical value of the measured phenomenon is units "
+        help_text="Numerical value of the measured phenomenon in units "
                   "specified by Process.",
         max_digits=8,
         decimal_places=3,
