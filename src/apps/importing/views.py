@@ -74,22 +74,36 @@ class ImportView(View):
             # Join paths
             file_path = os.path.join(file_dir_path, full_file_name)
 
+            decoded_body = u""
+            try:
+                decoded_body = request.body.decode("UTF-8")
+            except Exception as e:
+                decoded_body = str(request.body)
+
+            decoded_content_type = u""
+            try:
+                decoded_content_type = request.content_type.decode("UTF-8")
+            except Exception as e:
+                decoded_content_type = str(request.content_type)
+
+
             # Create provider LOG for this request
             provider_log = ProviderLog(
                 provider=provider,
                 is_valid=is_valid,
-                content_type=str(request.content_type),
-                body=str(request.body),
+                content_type=decoded_content_type,
+                body=decoded_body,
                 file_name=file_name,
                 file_path=file_path,
                 ext=ext,
                 received_time=now,
             )
+            print(decoded_body)
             provider_log.save()
 
             # Write content to the file
             self._ensure_path(file_dir_path)
-            self._write_to_file(file_path, str(request.body))
+            self._write_to_file(file_path, decoded_body)
 
         except (MultipleObjectsReturned, Provider.DoesNotExist) as ex:
             # Invalid provider! Don't log this - excess load!

@@ -181,6 +181,18 @@ the uwsgi with the new content.
 touch /opt/poster-app/version.py
 ```
 
+### 5) Crontab
+
+There is some functionality that requires periodic import from external sources.
+As a solution you need to add this import to cron.
+
+Run `crontab -e` as poster-app user to edit current cron table for that user.
+
+Add following lines to that file. (This will run ala_import management command every 2:00)
+```
+0 2 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py ala_import > /opt/poster-app/cronlog/cronjob.log
+```
+
 # Summary
 ```
 sudo su poster-app
