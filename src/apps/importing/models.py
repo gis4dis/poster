@@ -68,24 +68,10 @@ class ProviderLog(models.Model):
     is_processed.short_description = "Was the Log already processed?"
 
     def parsed_body(self):
-        x = bytes(self.body,'ascii')
-
-        print(type(x))
-        # x = u""+x.decode("utf-8")
-        print(type(x))
-        # return x
-        # x = bytearray(self.body, "ascii")
-        # x = self.body.encode('ascii', errors='ignore')
-        return x
-
-        # import html
-        # print(type(self.body))
-        # return mark_safe(html.escape(self.body))
-        # from bs4 import BeautifulSoup as bs
-        # import html
-        # x = bs(self.body)
-        # return mark_safe("<pre>"+html.escape(x.prettify())+"</pre>")
-        # eval(bad_str).decode("utf-8")
+        from bs4 import BeautifulSoup as bs
+        import html
+        x = bs(self.body)
+        return mark_safe("<pre>"+html.escape(x.prettify())+"</pre>")
 
 
 class ReadonlyProviderLog(ProviderLog):
