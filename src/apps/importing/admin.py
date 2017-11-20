@@ -70,7 +70,7 @@ class ProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     list_filter = ['provider__name', 'content_type', 'received_time', 'is_valid', ]
 
     fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid',  'uuid4',]
-    readonly_fields = ['uuid4',]
+    readonly_fields = ['uuid4', ]
 
 
 # https://medium.com/@hakibenita/how-to-turn-django-admin-into-a-lightweight-dashboard-a0e0bbf609ad
@@ -91,12 +91,12 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
 
     def stats_view(self, request, extra_context=None):
 
-        def get_next_in_date_hierarchy(request, date_hierarchy):
-            if date_hierarchy + '__day' in request.GET:
+        def get_next_in_date_hierarchy(req, date_hierarchy):
+            if date_hierarchy + '__day' in req.GET:
                 return 'hour'
-            if date_hierarchy + '__month' in request.GET:
+            if date_hierarchy + '__month' in req.GET:
                 return 'day'
-            if date_hierarchy + '__year' in request.GET:
+            if date_hierarchy + '__year' in req.GET:
                 return 'month'
             return 'month'
 

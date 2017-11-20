@@ -23,7 +23,7 @@ class ImportView(View):
     def post(self, request, code, token, file_name, ext, *args, **kwargs):
         """
         :param request:             general django request
-        :param provider:            provider code
+        :param code:            provider code
         :param token:               token used to limit load
         :param file_name:           filename passed in URL - use for storing it on disk
         :param ext:                 extension that is used for type
