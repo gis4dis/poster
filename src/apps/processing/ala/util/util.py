@@ -1,4 +1,5 @@
 import csv
+import logging
 import requests
 from datetime import date, timedelta, datetime
 from dateutil.parser import parse
@@ -10,11 +11,15 @@ from django.db.models import F, Q
 from apps.processing.ala.models import SamplingFeature, Property, Observation, Process
 from apps.processing.ala.common import UTC_P0100
 
+logger = logging.getLogger(__name__)
+
 stations_def = [
     ('11359201', {'name': u'Brno, botanical garden PřF MU'}),
     ('11359196', {'name': u'Brno, Kraví Hora'}),
     ('11359205', {'name': u'Brno, FF MU, Arne Nováka'}),
     ('11359192', {'name': u'Brno, Schodová'}),
+    ('11359202', {'name': u'Brno, Hroznová'}),
+    ('11359132', {'name': u'Brno, Mendlovo nám.'}),
 ]
 
 props_def = [
@@ -27,13 +32,66 @@ props_def = [
 ]
 
 props_to_provider_idx = {
-    'precipitation': 1,
-    'air_temperature': 2,
-    'air_humidity': 3,
-    'ground_air_temperature': 6,
-    'soil_temperature': 7,
-    'power_voltage': 8,
+    '11359201': {
+        'precipitation': 1,
+        'air_temperature': 2,
+        'air_humidity': 3,
+        'ground_air_temperature': 6,
+        'soil_temperature': 7,
+        'power_voltage': 8,
+    },
+    '11359196': {
+        'precipitation': 1,
+        'air_temperature': 2,
+        'air_humidity': 3,
+        'ground_air_temperature': 6,
+        'soil_temperature': 7,
+        'power_voltage': 8,
+    },
+    '11359205': {
+        'precipitation': 1,
+        'air_temperature': 2,
+        'air_humidity': 3,
+        'ground_air_temperature': 6,
+        'soil_temperature': 7,
+        'power_voltage': 8,
+    },
+    '11359192': {
+        'precipitation': 1,
+        'air_temperature': 2,
+        'air_humidity': 3,
+        'ground_air_temperature': 6,
+        'soil_temperature': 7,
+        'power_voltage': 8,
+    },
+    '11359202': {
+        'precipitation': 5,
+        'air_temperature': 1,
+        'air_humidity': 7,
+        'ground_air_temperature': 2,
+        'soil_temperature': 4,
+        'power_voltage': 12,
+    },
+    '11359132': {
+        'precipitation': 1,
+        'air_temperature': 2,
+        'air_humidity': 3,
+        'power_voltage': 5,
+    },
 }
+
+station_interval = {
+    '11359201': 10*60,
+    '11359196': 10*60,
+    '11359205': 10*60,
+    '11359192': 10*60,
+    '11359202': 15*60,
+    '11359132': 10*60,
+}
+# 6 prop * 7 per hour * 4 st = 168
+# 6 prop * 5 per hour * 1 st =  30
+# 4 prop * 7 per hour * 1 st =  28
+# TOTAL 226 per hour * 24 = 5424 per day
 
 processes_def = [
     ('measure', {'name': u'measuring'}),
@@ -94,14 +152,17 @@ def load(station, day):
 
     url = 'http://a.la-a.la/chart/data_csvcz.php?probe={}&t1={}&t2={}'.format(station.id_by_provider, from_s, to_s)
 
-    print(url)
+    logger.info('Downloading {}'.format(url))
     props = get_or_create_props()
 
     with closing(requests.get(url, stream=True)) as r:
         reader = csv.reader(codecs.iterdecode(r.iter_lines(), 'utf-8'), delimiter=';')
         rows = list(reader)
         num_rows = len(rows)
-        assert num_rows == 145, "Expected 145 rows, found %r" % num_rows
+        expected_rows = 24*60*60 / station_interval[station.id_by_provider] + 1
+        if num_rows != expected_rows:
+            logger.warning("Expected {} rows, found {}. Station {}.".format(
+                expected_rows, num_rows, station.id_by_provider))
         prev_time = None
 
         for ridx, row in enumerate(rows, 1):
@@ -113,6 +174,9 @@ def load(station, day):
                     continue
                 time_from = prev_time if prop.name_id == 'precipitation' else time
                 time_to = time
+                if(prop.name_id not in props_to_provider_idx[station.id_by_provider]):
+                    continue
+                prop_idx = props_to_provider_idx[station.id_by_provider][prop.name_id]
                 try:
                     obs = Observation.objects.create(
                         phenomenon_time=time_from,
@@ -120,7 +184,7 @@ def load(station, day):
                         observed_property=prop,
                         feature_of_interest=station,
                         procedure=process,
-                        result=Decimal(row[props_to_provider_idx[prop.name_id]].replace(',', '.'))
+                        result=Decimal(row[prop_idx].replace(',','.'))
                     )
                 except IntegrityError as e:
                     pass
@@ -141,6 +205,9 @@ def create_avgs(station, day):
     for prop in props:
         from_aware = from_naive.replace(tzinfo=UTC_P0100)
 
+        if prop.name_id not in props_to_provider_idx[station.id_by_provider]:
+            continue
+
         process = Process.objects.get(name_id='avg_hour')
 
         for i in range(0, 24):
@@ -152,7 +219,12 @@ def create_avgs(station, day):
                 observed_property=prop,
                 procedure=measure_process
             )
-            assert len(obss) == 6, "Expected 6 values to count hourly average, found %r" % len(obss)
+            expected_values = 60*60 / station_interval[station.id_by_provider]
+            if len(obss) != expected_values:
+                logger.warning("Expected {} values to count hourly average, found {}. Station {}, property {}, hour {}.".format(
+                    expected_values, len(obss), station.id_by_provider, prop.name_id, i))
+                continue
+
             values = list(map(lambda o: o.result, obss))
             avg = sum(values) / Decimal(len(values))
             try:

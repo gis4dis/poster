@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible, force_text
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 
 @python_2_unicode_compatible
@@ -65,6 +66,12 @@ class ProviderLog(models.Model):
     def is_processed(self):
         return self.last_processed is not None
     is_processed.short_description = "Was the Log already processed?"
+
+    def parsed_body(self):
+        from bs4 import BeautifulSoup as bs
+        import html
+        x = bs(self.body)
+        return mark_safe("<pre>"+html.escape(x.prettify())+"</pre>")
 
 
 class ReadonlyProviderLog(ProviderLog):
