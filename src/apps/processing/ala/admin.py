@@ -3,22 +3,25 @@ from django.contrib import admin
 
 
 class PropertyAdmin(admin.ModelAdmin):
-    readonly_fields=(
+    readonly_fields = (
         'name_id',
     )
+
 
 class ProcessAdmin(admin.ModelAdmin):
-    readonly_fields=(
+    readonly_fields = (
         'name_id',
     )
 
+
 class SamplingFeatureAdmin(admin.ModelAdmin):
-    readonly_fields=(
+    readonly_fields = (
         'id_by_provider',
     )
 
+
 class ObservationAdmin(admin.ModelAdmin):
-    readonly_fields=(
+    readonly_fields = (
         'phenomenon_time',
         'phenomenon_time_to',
         'observed_property',

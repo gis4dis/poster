@@ -11,19 +11,19 @@ from apps.processing.ala.models import SamplingFeature, Property, Observation, P
 from apps.processing.ala.common import UTC_P0100
 
 stations_def = [
-    ('11359201',{'name': u'Brno, botanical garden PřF MU'}),
-    ('11359196',{'name': u'Brno, Kraví Hora'}),
-    ('11359205',{'name': u'Brno, FF MU, Arne Nováka'}),
-    ('11359192',{'name': u'Brno, Schodová'}),
+    ('11359201', {'name': u'Brno, botanical garden PřF MU'}),
+    ('11359196', {'name': u'Brno, Kraví Hora'}),
+    ('11359205', {'name': u'Brno, FF MU, Arne Nováka'}),
+    ('11359192', {'name': u'Brno, Schodová'}),
 ]
 
 props_def = [
-    ('precipitation',{"name":'precipitation','unit':'mm'}),
-    ('air_temperature',{"name":'air temperature','unit':'°C'}),
-    ('air_humidity',{"name":'air humidity','unit':'?'}),
-    ('ground_air_temperature',{"name":'ground air temperature','unit':'°C'}),
-    ('soil_temperature',{"name":'soil temperature','unit':'°C'}),
-    ('power_voltage',{"name":'power voltage','unit':'V'}),
+    ('precipitation', {"name": 'precipitation', 'unit': 'mm'}),
+    ('air_temperature', {"name": 'air temperature', 'unit': '°C'}),
+    ('air_humidity', {"name": 'air humidity', 'unit': '?'}),
+    ('ground_air_temperature', {"name": 'ground air temperature', 'unit': '°C'}),
+    ('soil_temperature', {"name": 'soil temperature', 'unit': '°C'}),
+    ('power_voltage', {"name": 'power voltage', 'unit': 'V'}),
 ]
 
 props_to_provider_idx = {
@@ -36,40 +36,47 @@ props_to_provider_idx = {
 }
 
 processes_def = [
-    ('measure',{'name': u'measuring'}),
-    ('avg_hour',{'name': u'hourly average'}),
-    ('avg_day',{'name': u'daily average'}),
+    ('measure', {'name': u'measuring'}),
+    ('avg_hour', {'name': u'hourly average'}),
+    ('avg_day', {'name': u'daily average'}),
 ]
+
 
 def get_or_create_obj(the_class, obj_def, unique_attr):
     goc_args = {
         unique_attr: obj_def[0],
         'defaults': obj_def[1],
     }
-    obj,_ = the_class.objects.get_or_create(**goc_args)
+    obj, _ = the_class.objects.get_or_create(**goc_args)
     return obj
+
 
 def get_or_create_objs(the_class, objs_def, unique_attr):
     objs_map = map(lambda obj_def: get_or_create_obj(the_class, obj_def, unique_attr), objs_def)
     return list(objs_map)
 
+
 def Q_phenomenon_time(from_aware, to_aware):
     """Return filter of phenomenon_time with instant/period logic."""
     return Q(phenomenon_time__gte=from_aware) & (
-            Q(phenomenon_time_to__lt=to_aware) | (
-                Q(phenomenon_time_to=to_aware) &
-                ~Q(phenomenon_time_to=F('phenomenon_time'))
-            )
+        Q(phenomenon_time_to__lt=to_aware) | (
+            Q(phenomenon_time_to=to_aware) &
+            ~Q(phenomenon_time_to=F('phenomenon_time'))
         )
+    )
+
 
 def get_or_create_stations():
     return get_or_create_objs(SamplingFeature, stations_def, 'id_by_provider')
 
+
 def get_or_create_props():
     return get_or_create_objs(Property, props_def, 'name_id')
 
+
 def get_or_create_processes():
     return get_or_create_objs(Process, processes_def, 'name_id')
+
 
 def load(station, day):
     """Load and save ALA observations for given station and date."""
@@ -94,13 +101,13 @@ def load(station, day):
         reader = csv.reader(codecs.iterdecode(r.iter_lines(), 'utf-8'), delimiter=';')
         rows = list(reader)
         num_rows = len(rows)
-        assert num_rows==145, "Expected 145 rows, found %r" % num_rows
+        assert num_rows == 145, "Expected 145 rows, found %r" % num_rows
         prev_time = None
 
         for ridx, row in enumerate(rows, 1):
             time = parse(row[0], dayfirst=True).replace(tzinfo=UTC_P0100)
             for prop in props:
-                if prev_time == None and prop.name_id == 'precipitation':
+                if prev_time is None and prop.name_id == 'precipitation':
                     continue
                 if ridx == num_rows and prop.name_id != 'precipitation':
                     continue
@@ -113,7 +120,7 @@ def load(station, day):
                         observed_property=prop,
                         feature_of_interest=station,
                         procedure=process,
-                        result=Decimal(row[props_to_provider_idx[prop.name_id]].replace(',','.'))
+                        result=Decimal(row[props_to_provider_idx[prop.name_id]].replace(',', '.'))
                     )
                 except IntegrityError as e:
                     pass
@@ -122,7 +129,7 @@ def load(station, day):
 
 def create_avgs(station, day):
     """Create hourly averages for given station and date."""
-    if(station==None):
+    if station is None:
         stations = get_or_create_stations()
         station = stations[0]
 
@@ -136,7 +143,7 @@ def create_avgs(station, day):
 
         process = Process.objects.get(name_id='avg_hour')
 
-        for i in range(0,24):
+        for i in range(0, 24):
             to_aware = from_aware + timedelta(hours=1)
 
             obss = Observation.objects.filter(
@@ -145,7 +152,7 @@ def create_avgs(station, day):
                 observed_property=prop,
                 procedure=measure_process
             )
-            assert len(obss)==6, "Expected 6 values to count hourly average, found %r" % len(obss)
+            assert len(obss) == 6, "Expected 6 values to count hourly average, found %r" % len(obss)
             values = list(map(lambda o: o.result, obss))
             avg = sum(values) / Decimal(len(values))
             try:
