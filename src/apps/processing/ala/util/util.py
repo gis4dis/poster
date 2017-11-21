@@ -1,15 +1,20 @@
+# coding=utf-8
+import codecs
 import csv
 import logging
 import requests
-from datetime import date, timedelta, datetime
+from contextlib import closing
+from datetime import timedelta, datetime
 from dateutil.parser import parse
 from decimal import Decimal
-from contextlib import closing
-import codecs
+
 from django.db.utils import IntegrityError
-from django.db.models import F, Q
-from apps.processing.ala.models import SamplingFeature, Property, Observation, Process
-from apps.processing.ala.common import UTC_P0100
+
+from apps.processing.ala.models import SamplingFeature, Property, \
+    Observation, Process
+from apps.processing.common.time import UTC_P0100
+from apps.processing.common.filter import *
+from apps.processing.common.obj import *
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +31,8 @@ props_def = [
     ('precipitation', {"name": 'precipitation', 'unit': 'mm'}),
     ('air_temperature', {"name": 'air temperature', 'unit': '°C'}),
     ('air_humidity', {"name": 'air humidity', 'unit': '?'}),
-    ('ground_air_temperature', {"name": 'ground air temperature', 'unit': '°C'}),
+    ('ground_air_temperature',
+     {"name": 'ground air temperature', 'unit': '°C'}),
     ('soil_temperature', {"name": 'soil temperature', 'unit': '°C'}),
     ('power_voltage', {"name": 'power voltage', 'unit': 'V'}),
 ]
@@ -81,12 +87,12 @@ props_to_provider_idx = {
 }
 
 station_interval = {
-    '11359201': 10*60,
-    '11359196': 10*60,
-    '11359205': 10*60,
-    '11359192': 10*60,
-    '11359202': 15*60,
-    '11359132': 10*60,
+    '11359201': 10 * 60,
+    '11359196': 10 * 60,
+    '11359205': 10 * 60,
+    '11359192': 10 * 60,
+    '11359202': 15 * 60,
+    '11359132': 10 * 60,
 }
 # 6 prop * 7 per hour * 4 st = 168
 # 6 prop * 5 per hour * 1 st =  30
@@ -98,30 +104,6 @@ processes_def = [
     ('avg_hour', {'name': u'hourly average'}),
     ('avg_day', {'name': u'daily average'}),
 ]
-
-
-def get_or_create_obj(the_class, obj_def, unique_attr):
-    goc_args = {
-        unique_attr: obj_def[0],
-        'defaults': obj_def[1],
-    }
-    obj, _ = the_class.objects.get_or_create(**goc_args)
-    return obj
-
-
-def get_or_create_objs(the_class, objs_def, unique_attr):
-    objs_map = map(lambda obj_def: get_or_create_obj(the_class, obj_def, unique_attr), objs_def)
-    return list(objs_map)
-
-
-def Q_phenomenon_time(from_aware, to_aware):
-    """Return filter of phenomenon_time with instant/period logic."""
-    return Q(phenomenon_time__gte=from_aware) & (
-        Q(phenomenon_time_to__lt=to_aware) | (
-            Q(phenomenon_time_to=to_aware) &
-            ~Q(phenomenon_time_to=F('phenomenon_time'))
-        )
-    )
 
 
 def get_or_create_stations():
@@ -150,16 +132,19 @@ def load(station, day):
     from_s = int(from_aware.timestamp())
     to_s = int(to_aware.timestamp())
 
-    url = 'http://a.la-a.la/chart/data_csvcz.php?probe={}&t1={}&t2={}'.format(station.id_by_provider, from_s, to_s)
+    url = 'http://a.la-a.la/chart/data_csvcz.php?probe={}&t1={}&t2={}'.format(
+        station.id_by_provider, from_s, to_s)
 
     logger.info('Downloading {}'.format(url))
     props = get_or_create_props()
 
     with closing(requests.get(url, stream=True)) as r:
-        reader = csv.reader(codecs.iterdecode(r.iter_lines(), 'utf-8'), delimiter=';')
+        reader = csv.reader(codecs.iterdecode(r.iter_lines(), 'utf-8'),
+                            delimiter=';')
         rows = list(reader)
         num_rows = len(rows)
-        expected_rows = 24*60*60 / station_interval[station.id_by_provider] + 1
+        expected_rows = 24 * 60 * 60 / \
+                        station_interval[station.id_by_provider] + 1
         if num_rows != expected_rows:
             logger.warning("Expected {} rows, found {}. Station {}.".format(
                 expected_rows, num_rows, station.id_by_provider))
@@ -172,11 +157,14 @@ def load(station, day):
                     continue
                 if ridx == num_rows and prop.name_id != 'precipitation':
                     continue
-                time_from = prev_time if prop.name_id == 'precipitation' else time
+                time_from = \
+                    prev_time if prop.name_id == 'precipitation' else time
                 time_to = time
-                if(prop.name_id not in props_to_provider_idx[station.id_by_provider]):
+                if (prop.name_id not in
+                        props_to_provider_idx[station.id_by_provider]):
                     continue
-                prop_idx = props_to_provider_idx[station.id_by_provider][prop.name_id]
+                prop_idx = \
+                    props_to_provider_idx[station.id_by_provider][prop.name_id]
                 try:
                     obs = Observation.objects.create(
                         phenomenon_time=time_from,
@@ -184,7 +172,7 @@ def load(station, day):
                         observed_property=prop,
                         feature_of_interest=station,
                         procedure=process,
-                        result=Decimal(row[prop_idx].replace(',','.'))
+                        result=Decimal(row[prop_idx].replace(',', '.'))
                     )
                 except IntegrityError as e:
                     pass
@@ -219,10 +207,19 @@ def create_avgs(station, day):
                 observed_property=prop,
                 procedure=measure_process
             )
-            expected_values = 60*60 / station_interval[station.id_by_provider]
+            expected_values = 60 * 60 / \
+                              station_interval[station.id_by_provider]
             if len(obss) != expected_values:
-                logger.warning("Expected {} values to count hourly average, found {}. Station {}, property {}, hour {}.".format(
-                    expected_values, len(obss), station.id_by_provider, prop.name_id, i))
+                logger.warning(
+                    "Expected {} values to count hourly average, found {}. "
+                    "Station {}, property {}, hour {}.".format(
+                        expected_values,
+                        len(obss),
+                        station.id_by_provider,
+                        prop.name_id,
+                        i
+                    )
+                )
                 continue
 
             values = list(map(lambda o: o.result, obss))
