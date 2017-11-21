@@ -190,7 +190,7 @@ Run `crontab -e` as poster-app user to edit current cron table for that user.
 
 Add following lines to that file. (This will run ala_import management command every 2:00)
 ```
-0 2 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py ala_import > /opt/poster-app/cronlog/cronjob.log
+0 2 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py ala_import > /opt/poster-app/logs/cronjob.log
 ```
 
 # Summary
