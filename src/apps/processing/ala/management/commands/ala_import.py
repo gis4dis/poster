@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
 import logging
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from apps.processing.ala.util import util
 from dateutil.parser import parse
 from datetime import date, timedelta
@@ -9,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Import data from ALA stations, optionally you can pass date. Otherwise it will fetch yesterday data'
 
     def add_arguments(self, parser):
         parser.add_argument('date', nargs='?', type=parse, default=None)

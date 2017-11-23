@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 
     'apps.importing',
     'apps.processing.ala',
+    'apps.processing.pmo',
     'apps.processing.o2',
 ]
 
