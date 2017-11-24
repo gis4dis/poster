@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 self.stdout.write("Can't read PMO settings. Check you configuration")
                 continue
 
-            local_filedir = os.path.join(settings.IMPORT_ROOT, "providers/PMO", str(timezone.now().strftime("%Y%m%d-%H%M%S")))
+            local_filedir = os.path.join(settings.IMPORT_ROOT, "providers/PMO", str(timezone.now().strftime("%Y%m%d")))
             local_filename = os.path.join(local_filedir,  remote_filename)
 
             with closing(FTP(**settings.PMO_FTP)) as ftp:
