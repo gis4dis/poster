@@ -27,11 +27,11 @@ class Command(BaseCommand):
         for remote_filename in remote_filenames:
             if not remote_filename:
                 self.stdout.write("No filename specified")
-                return
+                continue
 
             if not settings.PMO_FTP or type(settings.PMO_FTP) != dict or not settings.IMPORT_ROOT:
                 self.stdout.write("Can't read PMO settings. Check you configuration")
-                return
+                continue
 
             local_filedir = os.path.join(settings.IMPORT_ROOT, "providers/PMO", str(timezone.now().strftime("%Y%m%d-%H%M%S")))
             local_filename = os.path.join(local_filedir,  remote_filename)
@@ -44,12 +44,12 @@ class Command(BaseCommand):
                         res = ftp.retrbinary('RETR %s' % remote_filename, f.write)
 
                         if not res.startswith('226 Transfer complete'):
-                            self.stdout.write('Downloaded of file {0} is not compile.'.format(remote_filename))
+                            self.stderr.write('Downloaded of file {0} is not compile.'.format(remote_filename))
                             os.remove(local_filename)
-                            return None
+                            continue
 
-                    self.stderr.write("File {} was successfully downloaded to {}".format(remote_filename, local_filename))
-                    return local_filename
+                    self.stdout.write("File {} was successfully downloaded to {}".format(remote_filename, local_filename))
+                    continue
 
                 except Exception as e:
                     self.stderr.write('Error during download from FTP! {}'.format(e))
