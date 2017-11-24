@@ -10,8 +10,8 @@ from decimal import Decimal
 
 from django.db.utils import IntegrityError
 
-from apps.processing.ala.models import SamplingFeature, Property, \
-    Observation, Process
+from apps.processing.ala.models import SamplingFeature, Observation
+from apps.common.models import Process, Property
 from apps.processing.common.time import UTC_P0100
 from apps.processing.common.filter import *
 from apps.processing.common.obj import *

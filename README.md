@@ -196,6 +196,7 @@ Add following lines to that file. (This will run ala_import management command e
 
 #### PMO
 Add following lines to that file. (This will run pmo_import management command)
+You need to change LIST_OF_FILENAMES to proper file names on the FTP
 ```
 0 5 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py pmo_import LIST_OF_FILENAMES >> /opt/poster-app/logs/cronjob.log 2>&1
 0 5 * * mon cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py pmo_import LIST_OF_FILENAMES >> /opt/poster-app/logs/cronjob.log 2>&1

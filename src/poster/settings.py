@@ -30,7 +30,11 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
 
+    'apps.common',
+    'apps.utils',
+
     'apps.importing',
+
     'apps.processing.ala',
     'apps.processing.pmo',
     'apps.processing.o2',
