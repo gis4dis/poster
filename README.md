@@ -191,14 +191,14 @@ Run `crontab -e` as poster-app user to edit current cron table for that user.
 #### ALA
 Add following lines to that file. (This will run ala_import management command every 2:00)
 ```
-0 2 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py ala_import > /opt/poster-app/logs/cronjob.log
+0 2 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py ala_import >> /opt/poster-app/logs/cronjob.log 2>&1
 ```
 
 #### PMO
 Add following lines to that file. (This will run pmo_import management command)
 ```
-0 5 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py pmo_import LIST_OF_FILENAMES > /opt/poster-app/logs/cronjob.log
-0 5 * * mon cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py pmo_import LIST_OF_FILENAMES > /opt/poster-app/logs/cronjob.log
+0 5 * * * cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py pmo_import LIST_OF_FILENAMES >> /opt/poster-app/logs/cronjob.log 2>&1
+0 5 * * mon cd /opt/poster-app/src && /opt/poster-app/virtualenv/bin/python manage.py pmo_import LIST_OF_FILENAMES >> /opt/poster-app/logs/cronjob.log 2>&1
 ```
 
 
