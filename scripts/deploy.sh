@@ -27,7 +27,7 @@ elif [ $1 == "web" ]
                 echo "Running django command"
                 source /opt/poster-app/virtualenv/bin/activate
                 cd /opt/poster-app/src
-                python manage.py $3
+                python manage.py ${@:3}
 
         else
             echo $ERRORSTRING;
