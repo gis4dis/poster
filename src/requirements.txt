@@ -1,6 +1,7 @@
 Django==1.11.2
 pytz==2017.2
 celery==4.1.0
+django-celery==3.2.2
 django-celery-beat==1.0.1
 django-celery-results==1.0.1
 psycopg2==2.7.3

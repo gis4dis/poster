@@ -2,6 +2,8 @@
 from django.utils.timezone import localtime
 from django.contrib.gis.db import models
 
+from django.contrib.postgres import fields as pgmodels
+
 
 class Property(models.Model):
     """Physical phenomenon related to weather, e.g. air temperature."""
@@ -93,16 +95,20 @@ class AbstractObservation(models.Model):
     It involves application of a specified procedure (Process), such as a
     sensor measurement or algorithm processing (e.g. hourly average)."""
 
-    phenomenon_time = models.DateTimeField(
-        help_text="Beginning of the observation.",
-        editable=False
+    phenomenon_time_range = pgmodels.DateTimeRangeField(
+        help_text="Datetime range when the observation was captured.",
     )
 
-    phenomenon_time_to = models.DateTimeField(
-        help_text="End of the observation. If the observation was instant, "
-                  "it is the same time as phenomenon_time.",
-        editable=False
-    )
+    # phenomenon_time = models.DateTimeField(
+    #     help_text="Beginning of the observation.",
+    #     editable=False
+    # )
+    #
+    # phenomenon_time_to = models.DateTimeField(
+    #     help_text="End of the observation. If the observation was instant, "
+    #               "it is the same time as phenomenon_time.",
+    #     editable=False
+    # )
 
     observed_property = models.ForeignKey(
         Property,
@@ -145,17 +151,18 @@ class AbstractObservation(models.Model):
 
     class Meta:
         abstract = True
-        get_latest_by = 'phenomenon_time'
-        ordering = ['-phenomenon_time', 'feature_of_interest', 'procedure',
+        get_latest_by = 'phenomenon_time_range'
+        ordering = ['-phenomenon_time_range', 'feature_of_interest', 'procedure',
                     'observed_property']
-        unique_together = (('phenomenon_time', 'phenomenon_time_to',
+        unique_together = (('phenomenon_time_range',
                             'observed_property', 'feature_of_interest',
                             'procedure'),)
 
     @property
     def _phenomenon_time_is_period(self):
         """Returns true if phenomenon time is interval."""
-        return self.phenomenon_time != self.phenomenon_time_to
+        # return self.phenomenon_time != self.phenomenon_time_to
+        return self.phenomenon_time_range.upper is not None
 
     def __str__(self):
         return "{} of {} at station {} {}".format(
