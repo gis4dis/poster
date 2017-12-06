@@ -113,7 +113,7 @@ class AbstractObservation(models.Model):
     observed_property = models.ForeignKey(
         Property,
         help_text="Phenomenon that was observed, e.g. air temperature.",
-        related_name='observations',
+        related_name="%(app_label)s_%(class)s_related",
         editable=False
     )
 
@@ -122,7 +122,7 @@ class AbstractObservation(models.Model):
     feature_of_interest = models.ForeignKey(
         AbstractFeature,
         help_text="Weather station where the observation was taken.",
-        related_name='observations',
+        related_name="%(app_label)s_%(class)s_related",
         editable=False
     )
 
@@ -130,7 +130,7 @@ class AbstractObservation(models.Model):
         Process,
         help_text="Process used to generate the result, e.g. measurement or "
                   "average.",
-        related_name='observations',
+        related_name="%(app_label)s_%(class)s_related",
         editable=False
     )
 
