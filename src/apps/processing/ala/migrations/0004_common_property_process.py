@@ -94,7 +94,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('ala', '0003_improve_doc'),
-        ('common', '0002_auto_20171124_1439'),
+        ('common', '0002_ala_properties_processes'),
     ]
 
     operations = [
