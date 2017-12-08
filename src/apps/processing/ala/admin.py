@@ -22,6 +22,7 @@ class ObservationAdmin(admin.ModelAdmin):
         ('observed_property', admin.RelatedOnlyFieldListFilter),
         ('feature_of_interest', admin.RelatedOnlyFieldListFilter),
         ('procedure', admin.RelatedOnlyFieldListFilter),
+        'result_null_reason',
     )
     readonly_fields = (
         'phenomenon_time',
