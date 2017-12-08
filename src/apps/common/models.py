@@ -146,7 +146,13 @@ class AbstractObservation(models.Model):
                   "specified by Process.",
         max_digits=8,
         decimal_places=3,
+        null=True,
         editable=False
+    )
+    result_null_reason = models.CharField(
+        help_text="Reason why result is null.",
+        max_length=100,
+        default='',
     )
 
     class Meta:

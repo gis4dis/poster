@@ -261,11 +261,6 @@ class SocioDemoObservation(AbstractObservation):
         null=True,
         editable=False,
     )
-    result_null_reason = models.CharField(
-        help_text="Reason why result is null.",
-        max_length=100,
-        default='',
-    )
 
     @property
     def result_for_human(self):

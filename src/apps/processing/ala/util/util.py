@@ -143,7 +143,7 @@ def load(station, day):
                             delimiter=';')
         rows = list(reader)
         num_rows = len(rows)
-        expected_rows = 24 * 60 * 60 / \
+        expected_rows = 24 * 60 * 60 // \
                         station_interval[station.id_by_provider] + 1
         if num_rows != expected_rows:
             logger.warning("Expected {} rows, found {}. Station {}.".format(
@@ -165,6 +165,27 @@ def load(station, day):
                     continue
                 prop_idx = \
                     props_to_provider_idx[station.id_by_provider][prop.name_id]
+                res_str = row[prop_idx].replace(',', '.')
+                if res_str == '':
+                    result = None
+                    result_null_reason = 'empty string in CSV'
+                else:
+                    try:
+                        result = Decimal(res_str)
+                        result_null_reason = ''
+                    except Exception as e:
+                        result = None
+                        result_null_reason = 'invalid string in CSV'
+                if result is None:
+                    logger.warning(
+                        "Result_null_reason of measuring, station {}, "
+                        "property {}, phenomenon time {}: {}".format(
+                            station.id_by_provider,
+                            prop.name_id,
+                            time_from,
+                            result_null_reason
+                        )
+                    )
                 try:
                     obs = Observation.objects.create(
                         phenomenon_time=time_from,
@@ -172,7 +193,8 @@ def load(station, day):
                         observed_property=prop,
                         feature_of_interest=station,
                         procedure=process,
-                        result=Decimal(row[prop_idx].replace(',', '.'))
+                        result=result,
+                        result_null_reason=result_null_reason
                     )
                 except IntegrityError as e:
                     pass
@@ -207,23 +229,32 @@ def create_avgs(station, day):
                 observed_property=prop,
                 procedure=measure_process
             )
-            expected_values = 60 * 60 / \
+            expected_values = 60 * 60 // \
                               station_interval[station.id_by_provider]
             if len(obss) != expected_values:
+                result = None
+                result_null_reason = 'missing observations'
+            else:
+                values = list(map(lambda o: o.result, obss))
+                values = list(filter(lambda v: v is not None, values))
+                if(len(values) == 0):
+                    result = None
+                    result_null_reason = 'only null values'
+                else:
+                    result = sum(values) / Decimal(len(values))
+                    result_null_reason = ''
+
+            if result is None:
                 logger.warning(
-                    "Expected {} values to count hourly average, found {}. "
-                    "Station {}, property {}, hour {}.".format(
-                        expected_values,
-                        len(obss),
+                    "Result_null_reason of hourly average, "
+                    "station {}, property {}, hour {}: {}".format(
                         station.id_by_provider,
                         prop.name_id,
-                        i
+                        i,
+                        result_null_reason
                     )
                 )
-                continue
 
-            values = list(map(lambda o: o.result, obss))
-            avg = sum(values) / Decimal(len(values))
             try:
                 obs = Observation.objects.create(
                     phenomenon_time=from_aware,
@@ -231,7 +262,8 @@ def create_avgs(station, day):
                     observed_property=prop,
                     feature_of_interest=station,
                     procedure=process,
-                    result=avg
+                    result=result,
+                    result_null_reason=result_null_reason,
                 )
                 obs.related_observations.set(obss)
             except IntegrityError as e:

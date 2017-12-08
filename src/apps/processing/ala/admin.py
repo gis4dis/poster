@@ -31,6 +31,7 @@ class ObservationAdmin(admin.ModelAdmin):
         'procedure',
         'related_observations',
         'result',
+        'result_null_reason',
     )
 
 
