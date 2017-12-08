@@ -18,7 +18,7 @@ class Command(BaseCommand):
         stations = util.get_or_create_stations()
         day = options['date']
         if day is None:
-            day = date.today() - timedelta(1)
+            day = date.today() - timedelta(2)
 
         logger.info(
             'Importing observations of {} ALA stations from {}.'.format(
