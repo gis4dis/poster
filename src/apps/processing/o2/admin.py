@@ -1,4 +1,5 @@
-from .models import Zsj, MobilityStream, Property, Process, MobilityObservation
+from .models import Zsj, MobilityStream, Property, Process, \
+    MobilityObservation, SocioDemoObservation
 from django.contrib import admin
 
 
@@ -42,8 +43,22 @@ class MobilityObservationAdmin(admin.ModelAdmin):
     )
 
 
+class SocioDemoObservationAdmin(admin.ModelAdmin):
+    readonly_fields = (
+        'phenomenon_time_range',
+        'observed_property',
+        'feature_of_interest',
+        'procedure',
+        'age',
+        'gender',
+        'occurrence_type',
+        'result_for_human',
+    )
+
+
 admin.site.register(Property, PropertyAdmin)
 admin.site.register(Process, ProcessAdmin)
 admin.site.register(Zsj, ZsjAdmin)
 admin.site.register(MobilityStream, MobilityStreamAdmin)
 admin.site.register(MobilityObservation, MobilityObservationAdmin)
+admin.site.register(SocioDemoObservation, SocioDemoObservationAdmin)

@@ -1,6 +1,10 @@
+# coding=utf-8
 import uuid
 from django.db import models
+from django.contrib.postgres.fields import IntegerRangeField, DateTimeRangeField
 from django.utils.timezone import localtime
+
+from apps.common.models import AbstractObservation
 
 
 class Property(models.Model):
@@ -112,6 +116,7 @@ OCCURRENCE_CHOICES = (
     (TRANSIT_OCCURRENCE, 'Transit'),
     (VISIT_OCCURRENCE, 'Visit'),
 )
+
 UNIQUES_ALL = "0"
 UNIQUES_UNIQUE = "1"
 UNIQUES_CHOICES = (
@@ -132,19 +137,16 @@ class MobilityObservation(models.Model):
     observed_property = models.ForeignKey(
         Property,
         help_text="Phenomenon that was observed, e.g. mobility.",
-        related_name='observations',
         editable=False
     )
     feature_of_interest = models.ForeignKey(
         MobilityStream,
         help_text="Stream station where the observation was taken.",
-        related_name='observations',
         editable=False
     )
     procedure = models.ForeignKey(
         Process,
         help_text="Process used to generate the result, e.g. estimation.",
-        related_name='observations',
         editable=False
     )
     src_occurrence_type = models.CharField(
@@ -218,4 +220,111 @@ class MobilityObservation(models.Model):
             self.get_dst_occurrence_type_display(),
             self.get_uniques_type_display(),
             res_str
+        )
+
+
+ANY_GENDER = "-"
+MALE_GENDER = "m"
+FEMALE_GENDER = "f"
+GENDER_CHOICES = (
+    (ANY_GENDER, 'Any'),
+    (MALE_GENDER, 'Male'),
+    (FEMALE_GENDER, 'Female'),
+)
+
+class SocioDemoObservation(AbstractObservation):
+    feature_of_interest = models.ForeignKey(
+        Zsj,
+        help_text="ZSJ where the observation was taken.",
+        editable=False,
+    )
+    age = IntegerRangeField(
+        help_text="Age of the population.",
+        editable=False,
+    )
+    gender = models.CharField(
+        help_text="Gender of the population.",
+        max_length=1,
+        choices=GENDER_CHOICES,
+        editable=False,
+        default=ANY_GENDER,
+    )
+    occurrence_type = models.CharField(
+        help_text="Occurrence type in the ZSJ.",
+        max_length=1,
+        choices=OCCURRENCE_CHOICES,
+        editable=False,
+    )
+    result = models.PositiveIntegerField(
+        help_text="Numerical value of the measured phenomenon in units "
+                  "specified by Process.",
+        null=True,
+        editable=False,
+    )
+    result_null_reason = models.CharField(
+        help_text="Reason why result is null.",
+        max_length=100,
+        default='',
+    )
+
+    @property
+    def result_for_human(self):
+        if self.result is not None:
+            res_str = "{}".format(self.result)
+        else:
+            reason = self.result_null_reason
+            if(reason == 'HTTP Error 204'):
+                reason = 'differential privacy'
+            res_str = 'unknown because of ' + reason
+        return res_str
+    result_for_human.fget.short_description = 'Result'
+
+    class Meta:
+        get_latest_by = 'phenomenon_time_range'
+        ordering = [
+            '-phenomenon_time_range',
+            'feature_of_interest',
+            'observed_property',
+            'procedure',
+            'age',
+            'gender',
+            'occurrence_type',
+        ]
+
+        unique_together = (
+            (
+                'phenomenon_time_range',
+                'observed_property',
+                'feature_of_interest',
+                'procedure',
+                'age',
+                'gender',
+                'occurrence_type',
+            ),
+        )
+
+    def __str__(self):
+        pt_l_local = localtime(self.phenomenon_time_range.lower)
+        pt_u_local = localtime(self.phenomenon_time_range.upper)
+
+        if(self.age.lower==0 and self.age.upper is None):
+            age = 'Any age'
+        else:
+            age = u'{}–{} years'.format(
+                self.age.lower,
+                getattr(self.age, 'upper', u'∞')
+            )
+
+        return "{} of {} on {} at {} ({}, {}, {}) was {}".format(
+            self.observed_property.name,
+            self.feature_of_interest.name,
+            pt_l_local.strftime('%Y-%m-%d'),
+            u'{}–{}'.format(
+                pt_l_local.strftime('%H:%M'),
+                pt_u_local.strftime('%H:%M'),
+            ),
+            age,
+            self.get_gender_display() + ' gender',
+            self.get_occurrence_type_display(),
+            self.result_for_human,
         )

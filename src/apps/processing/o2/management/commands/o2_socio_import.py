@@ -7,18 +7,17 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Import O2 mobility'
+    help = 'Import O2 socio-demo'
 
     def handle(self, *args, **options):
 
-        util.get_or_create_zsjs()
-        streams = util.get_or_create_streams()
+        zsjs = util.get_or_create_shopping_mall_zsjs()
 
-        logger.info('Importing mobility observations of {} mobility streams '
-                    'from O2 Liberty API.'.format(len(streams)))
+        logger.info('Importing socio-demo observations of {} ZSJs '
+                    'from O2 Liberty API.'.format(len(zsjs)))
 
         try:
-            util.load_mobility(streams)
+            util.load_sociodemo(zsjs)
         except Exception as e:
             # for q in connection.queries:
             #     print(q['sql'])
