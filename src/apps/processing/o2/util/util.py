@@ -218,8 +218,22 @@ def load_mobility(streams):
         with closing(requests.get(url, params=payload, verify=False)) as \
                 mob_r:
             if (mob_r.status_code == 200):
-                result = int(mob_r.json()['count'])
-                result_null_reason = ''
+                try:
+                    res_json = mob_r.json()
+                    if 'count' not in res_json:
+                        result = None
+                        result_null_reason = \
+                            'missing "count" key in response JSON'
+                    elif res_json['count'] is None:
+                        result = None
+                        result_null_reason = \
+                            '"count" set to null'
+                    else:
+                        result = int(res_json['count'])
+                        result_null_reason = ''
+                except ValueError as e:
+                    result = None
+                    result_null_reason = 'invalid JSON in HTTP response'
             elif (mob_r.status_code == 429):
                 logger.info('O2 Liberty API encountered HTTP Error 429 '
                             '"Too Many Requests"')
@@ -426,8 +440,22 @@ def load_sociodemo(zsjs):
         with closing(requests.get(url, params=payload, verify=False)) as \
                 soc_r:
             if (soc_r.status_code == 200):
-                result = int(soc_r.json()['count'])
-                result_null_reason = ''
+                try:
+                    res_json = soc_r.json()
+                    if 'count' not in res_json:
+                        result = None
+                        result_null_reason = \
+                            'missing "count" key in response JSON'
+                    elif res_json['count'] is None:
+                        result = None
+                        result_null_reason = \
+                            '"count" set to null'
+                    else:
+                        result = int(res_json['count'])
+                        result_null_reason = ''
+                except ValueError as e:
+                    result = None
+                    result_null_reason = 'invalid JSON in HTTP response'
             elif (soc_r.status_code == 429):
                 logger.info('O2 Liberty API encountered HTTP Error 429 '
                             '"Too Many Requests"')
