@@ -1,3 +1,4 @@
+from apps.common.actions import stream_as_csv_action
 from .models import Zsj, MobilityStream, Property, Process, \
     MobilityObservation, SocioDemoObservation
 from django.contrib import admin
@@ -29,6 +30,13 @@ class ZsjAdmin(admin.ModelAdmin):
 
 
 class MobilityObservationAdmin(admin.ModelAdmin):
+    actions = [
+        stream_as_csv_action("CSV Export (stream)", fields=[
+            'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
+            'src_occurrence_type', 'dst_occurrence_type', 'uniques_type',
+        ]),
+    ]
+
     readonly_fields = (
         'phenomenon_time',
         'phenomenon_time_to',
@@ -44,6 +52,13 @@ class MobilityObservationAdmin(admin.ModelAdmin):
 
 
 class SocioDemoObservationAdmin(admin.ModelAdmin):
+    actions = [
+        stream_as_csv_action("CSV Export (stream)", fields=[
+            'phenomenon_time_range', 'observed_property', 'feature_of_interest', 'procedure', 'age', 'gender',
+            'occurrence_type', 'result_for_human',
+        ]),
+    ]
+
     readonly_fields = (
         'phenomenon_time_range',
         'observed_property',
