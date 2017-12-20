@@ -11,11 +11,7 @@ class SamplingFeatureAdmin(admin.ModelAdmin):
 
 class ObservationAdmin(admin.ModelAdmin):
     actions = [
-        export_as_csv_action("CSV Export", fields=[
-            'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
-        ]),
-
-        stream_as_csv_action("CSV Export - stream", fields=[
+        stream_as_csv_action("CSV Export (stream)", fields=[
             'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
         ]),
     ]
