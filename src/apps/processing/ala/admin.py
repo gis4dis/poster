@@ -1,4 +1,4 @@
-from apps.common.actions import export_as_csv_action, stream_as_csv_action
+from apps.common.actions import stream_as_csv_action
 from .models import SamplingFeature, Observation
 from django.contrib import admin
 
