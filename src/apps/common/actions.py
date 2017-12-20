@@ -26,15 +26,17 @@ def stream_as_csv_action(description="Stream selected objects as CSV file",
         pseudo_buffer = Echo()
         writer = unicodecsv.writer(pseudo_buffer, encoding='utf-8')
 
-        def stream(w):
+        def content_iterator():
             if header:
-                w.writerow(field_names)
-            for obj in queryset:
-                row = [getattr(obj, field)() if callable(getattr(obj, field)) else getattr(obj, field) for field in
+                yield field_names
+            for obj in queryset.iterator():
+                yield [getattr(obj, field)() if callable(getattr(obj, field)) else getattr(obj, field) for field in
                        field_names]
-                w.writerow(row)
 
-        response = StreamingHttpResponse(stream(writer), content_type='text/csv')
+        response = StreamingHttpResponse(
+            (writer.writerow(line) for line in content_iterator()),
+            content_type='text/csv'
+        )
         response['Content-Disposition'] = 'attachment; filename=%s.csv' % str(opts).replace('.', '_')
         return response
 
