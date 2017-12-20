@@ -1,4 +1,4 @@
-from apps.common.actions import export_as_csv_action
+from apps.common.actions import export_as_csv_action, stream_as_csv_action
 from .models import SamplingFeature, Observation
 from django.contrib import admin
 
@@ -10,9 +10,15 @@ class SamplingFeatureAdmin(admin.ModelAdmin):
 
 
 class ObservationAdmin(admin.ModelAdmin):
-    actions = [export_as_csv_action("CSV Export", fields=[
-        'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
-    ])]
+    actions = [
+        export_as_csv_action("CSV Export", fields=[
+            'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
+        ]),
+
+        stream_as_csv_action("CSV Export - stream", fields=[
+            'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
+        ]),
+    ]
 
     list_display = (
         'phenomenon_time',
