@@ -12,9 +12,9 @@ from django.db.utils import IntegrityError
 
 from apps.processing.ala.models import SamplingFeature, Observation
 from apps.common.models import Process, Property
-from apps.processing.common.time import UTC_P0100
-from apps.processing.common.filter import *
-from apps.processing.common.obj import *
+from apps.utils.obj import *
+from apps.utils.time import UTC_P0100
+from psycopg2.extras import DateTimeTZRange
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +160,8 @@ def load(station, day):
                 time_from = \
                     prev_time if prop.name_id == 'precipitation' else time
                 time_to = time
+                time_range_boundary = '[]' if time_from == time_to else '[)'
+                pt_range = DateTimeTZRange(time_from, time_to, time_range_boundary)
                 if (prop.name_id not in
                         props_to_provider_idx[station.id_by_provider]):
                     continue
@@ -188,8 +190,7 @@ def load(station, day):
                     )
                 try:
                     obs = Observation.objects.create(
-                        phenomenon_time=time_from,
-                        phenomenon_time_to=time_to,
+                        phenomenon_time_range=pt_range,
                         observed_property=prop,
                         feature_of_interest=station,
                         procedure=process,
@@ -222,9 +223,10 @@ def create_avgs(station, day):
 
         for i in range(0, 24):
             to_aware = from_aware + timedelta(hours=1)
+            pt_range = DateTimeTZRange(from_aware, to_aware)
 
             obss = Observation.objects.filter(
-                Q_phenomenon_time(from_aware, to_aware),
+                phenomenon_time_range__contained_by=pt_range,
                 feature_of_interest=station,
                 observed_property=prop,
                 procedure=measure_process
@@ -237,7 +239,7 @@ def create_avgs(station, day):
             else:
                 values = list(map(lambda o: o.result, obss))
                 values = list(filter(lambda v: v is not None, values))
-                if(len(values) == 0):
+                if (len(values) == 0):
                     result = None
                     result_null_reason = 'only null values'
                 else:
@@ -257,8 +259,7 @@ def create_avgs(station, day):
 
             try:
                 obs = Observation.objects.create(
-                    phenomenon_time=from_aware,
-                    phenomenon_time_to=to_aware,
+                    phenomenon_time_range=pt_range,
                     observed_property=prop,
                     feature_of_interest=station,
                     procedure=process,

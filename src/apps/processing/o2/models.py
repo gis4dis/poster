@@ -3,6 +3,7 @@ import uuid
 from django.db import models
 from django.contrib.postgres.fields import IntegerRangeField, DateTimeRangeField
 from django.utils.timezone import localtime
+from psycopg2.extras import NumericRange
 
 from apps.common.models import AbstractObservation
 
@@ -242,6 +243,24 @@ class SocioDemoObservation(AbstractObservation):
         help_text="Age of the population.",
         editable=False,
     )
+    def age_for_human(self):
+        if(self.age.lower==0 and self.age.upper is None):
+            age = 'Any age'
+        else:
+            if self.age.upper is None:
+                age = '{}+ years'.format(self.age.lower)
+            else:
+                upper = self.age.upper
+                if not self.age.upper_inc:
+                    upper -= 1
+                age = '{}–{} years'.format(
+                    self.age.lower,
+                    upper
+                )
+        return age
+    age_for_human.short_description = 'Age'
+    age_for_human.admin_order_field = 'age'
+
     gender = models.CharField(
         help_text="Gender of the population.",
         max_length=1,

@@ -4,6 +4,8 @@ from django.contrib.gis.db import models
 
 from django.contrib.postgres import fields as pgmodels
 
+from apps.utils.time import format_delta
+
 
 class Property(models.Model):
     """Physical phenomenon related to weather, e.g. air temperature."""
@@ -99,11 +101,20 @@ class AbstractObservation(models.Model):
         help_text="Datetime range when the observation was captured.",
     )
 
-    # phenomenon_time = models.DateTimeField(
-    #     help_text="Beginning of the observation.",
-    #     editable=False
-    # )
-    #
+    def phenomenon_time_from(self):
+        return self.phenomenon_time_range.lower
+    phenomenon_time_from.admin_order_field = 'phenomenon_time_range'
+
+    @property
+    def phenomenon_time_duration(self):
+        delta = self.phenomenon_time_range.upper - self.phenomenon_time_range.lower
+        return delta
+
+    @property
+    def phenomenon_time_duration_for_human(self):
+        return format_delta(self.phenomenon_time_duration)
+    phenomenon_time_duration_for_human.fget.short_description = "Phenomenon time duration"
+
     # phenomenon_time_to = models.DateTimeField(
     #     help_text="End of the observation. If the observation was instant, "
     #               "it is the same time as phenomenon_time.",
@@ -164,16 +175,3 @@ class AbstractObservation(models.Model):
                             'observed_property', 'feature_of_interest',
                             'procedure'),)
 
-    @property
-    def _phenomenon_time_is_period(self):
-        """Returns true if phenomenon time is interval."""
-        # return self.phenomenon_time != self.phenomenon_time_to
-        return self.phenomenon_time_range.upper is not None
-
-    def __str__(self):
-        return "{} of {} at station {} {}".format(
-            self.procedure.name,
-            self.observed_property.name,
-            self.feature_of_interest.name,
-            localtime(self.phenomenon_time).strftime('%Y-%m-%d %H:%M UTC%z')
-        )

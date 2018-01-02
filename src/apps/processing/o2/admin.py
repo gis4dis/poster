@@ -1,4 +1,6 @@
 from apps.common.actions import stream_as_csv_action
+from apps.common.list_filter import DateRangeRangeFilter
+from apps.processing.o2.list_filter import AgeRangeFilter
 from .models import Zsj, MobilityStream, Property, Process, \
     MobilityObservation, SocioDemoObservation
 from django.contrib import admin
@@ -54,17 +56,52 @@ class MobilityObservationAdmin(admin.ModelAdmin):
 class SocioDemoObservationAdmin(admin.ModelAdmin):
     actions = [
         stream_as_csv_action("CSV Export (stream)", fields=[
-            'phenomenon_time_range', 'observed_property', 'feature_of_interest', 'procedure', 'age', 'gender',
-            'occurrence_type', 'result_for_human',
+            'phenomenon_time_from', 'phenomenon_time_duration',
+            'observed_property', 'feature_of_interest', 'procedure',
+            'age_for_human', 'gender', 'occurrence_type',
+            'result_for_human',
         ]),
     ]
 
-    readonly_fields = (
-        'phenomenon_time_range',
+    list_display = (
+        'phenomenon_time_from',
+        'phenomenon_time_duration_for_human',
         'observed_property',
         'feature_of_interest',
         'procedure',
-        'age',
+        'age_for_human',
+        'gender',
+        'occurrence_type',
+        'result_for_human',
+    )
+    list_filter = (
+        DateRangeRangeFilter,
+        ('observed_property', admin.RelatedOnlyFieldListFilter),
+        ('feature_of_interest', admin.RelatedOnlyFieldListFilter),
+        ('procedure', admin.RelatedOnlyFieldListFilter),
+        AgeRangeFilter,
+        'gender',
+        'occurrence_type',
+        'result_null_reason',
+    )
+    fields = (
+        'phenomenon_time_from',
+        'phenomenon_time_duration_for_human',
+        'observed_property',
+        'feature_of_interest',
+        'procedure',
+        'age_for_human',
+        'gender',
+        'occurrence_type',
+        'result_for_human',
+    )
+    readonly_fields = (
+        'phenomenon_time_from',
+        'phenomenon_time_duration_for_human',
+        'observed_property',
+        'feature_of_interest',
+        'procedure',
+        'age_for_human',
         'gender',
         'occurrence_type',
         'result_for_human',
