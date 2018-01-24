@@ -1,5 +1,5 @@
 from apps.common.actions import stream_as_csv_action
-from apps.common.list_filter import DateRangeRangeFilter
+from apps.common.list_filter import DateRangeRangeFilter, ResultNullReasonFilter
 from .models import SamplingFeature, Observation
 from django.contrib import admin
 
@@ -30,7 +30,7 @@ class ObservationAdmin(admin.ModelAdmin):
         ('observed_property', admin.RelatedOnlyFieldListFilter),
         ('feature_of_interest', admin.RelatedOnlyFieldListFilter),
         ('procedure', admin.RelatedOnlyFieldListFilter),
-        'result_null_reason',
+        ('result_null_reason', ResultNullReasonFilter),
     )
     fields = (
         'phenomenon_time_from',

@@ -5,6 +5,8 @@
 from datetime import date
 
 from django.contrib import admin
+from django.utils.encoding import force_text
+from django.utils.translation import ugettext_lazy as _
 from datetime import datetime, date, timedelta
 from dateutil.parser import parse
 from psycopg2.extras import DateTimeTZRange
@@ -65,3 +67,45 @@ class DateRangeRangeFilter(admin.SimpleListFilter):
         return queryset.filter(
             phenomenon_time_range__contained_by=dt_range
         )
+
+
+class ResultNullReasonFilter(admin.AllValuesFieldListFilter):
+    def choices(self, changelist):
+        yield {
+            'selected': self.lookup_val is None and self.lookup_val_isnull is None,
+            'query_string': changelist.get_query_string({}, [self.lookup_kwarg, self.lookup_kwarg_isnull]),
+            'display': _('All'),
+        }
+        yield {
+            'selected': self.lookup_val == "" and self.lookup_val_isnull is None,
+            'query_string': changelist.get_query_string(
+                {
+                    self.lookup_kwarg: ""
+                },
+                [self.lookup_kwarg_isnull]
+            ),
+            'display': _('Empty (result exists)'),
+        }
+        include_none = False
+        for val in self.lookup_choices:
+            if val is None:
+                include_none = True
+                continue
+            if val == "":
+                continue
+            val = force_text(val)
+            yield {
+                'selected': self.lookup_val == val,
+                'query_string': changelist.get_query_string({
+                    self.lookup_kwarg: val,
+                }, [self.lookup_kwarg_isnull]),
+                'display': val,
+            }
+        if include_none:
+            yield {
+                'selected': bool(self.lookup_val_isnull),
+                'query_string': changelist.get_query_string({
+                    self.lookup_kwarg_isnull: 'True',
+                }, [self.lookup_kwarg]),
+                'display': self.empty_value_display,
+            }

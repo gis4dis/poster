@@ -1,5 +1,5 @@
 from apps.common.actions import stream_as_csv_action
-from apps.common.list_filter import DateRangeRangeFilter
+from apps.common.list_filter import DateRangeRangeFilter, ResultNullReasonFilter
 from apps.processing.o2.list_filter import AgeRangeFilter
 from .models import Zsj, MobilityStream, \
     MobilityObservation, SocioDemoObservation
@@ -53,7 +53,7 @@ class MobilityObservationAdmin(admin.ModelAdmin):
         'src_occurrence_type',
         'dst_occurrence_type',
         'uniques_type',
-        'result_null_reason',
+        ('result_null_reason', ResultNullReasonFilter),
     )
     fields = list_display
     readonly_fields = fields
@@ -93,7 +93,7 @@ class SocioDemoObservationAdmin(admin.ModelAdmin):
         AgeRangeFilter,
         'gender',
         'occurrence_type',
-        'result_null_reason',
+        ('result_null_reason', ResultNullReasonFilter),
     )
     fields = list_display
     readonly_fields = fields
