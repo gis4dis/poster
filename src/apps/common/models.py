@@ -160,6 +160,17 @@ class AbstractObservation(models.Model):
         null=True,
         editable=False
     )
+
+    @property
+    def result_for_human(self):
+        if self.result is not None:
+            res_str = "{}".format(self.result)
+        else:
+            reason = self.result_null_reason
+            res_str = 'unknown because of ' + reason
+        return res_str
+    result_for_human.fget.short_description = 'Result'
+
     result_null_reason = models.CharField(
         help_text="Reason why result is null.",
         max_length=100,

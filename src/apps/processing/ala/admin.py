@@ -13,7 +13,12 @@ class SamplingFeatureAdmin(admin.ModelAdmin):
 class ObservationAdmin(admin.ModelAdmin):
     actions = [
         stream_as_csv_action("CSV Export (stream)", fields=[
-            'phenomenon_time_from', 'phenomenon_time_duration', 'observed_property', 'feature_of_interest', 'procedure', 'result',
+            'phenomenon_time_from',
+            'phenomenon_time_duration',
+            'observed_property',
+            'feature_of_interest',
+            'procedure',
+            'result_for_human',
         ]),
     ]
 
@@ -23,7 +28,7 @@ class ObservationAdmin(admin.ModelAdmin):
         'observed_property',
         'feature_of_interest',
         'procedure',
-        'result',
+        'result_for_human',
     )
     list_filter = (
         DateRangeRangeFilter,
@@ -32,26 +37,8 @@ class ObservationAdmin(admin.ModelAdmin):
         ('procedure', admin.RelatedOnlyFieldListFilter),
         ('result_null_reason', ResultNullReasonFilter),
     )
-    fields = (
-        'phenomenon_time_from',
-        'phenomenon_time_duration_for_human',
-        'observed_property',
-        'feature_of_interest',
-        'procedure',
-        'related_observations',
-        'result',
-        'result_null_reason',
-    )
-    readonly_fields = (
-        'phenomenon_time_from',
-        'phenomenon_time_duration_for_human',
-        'observed_property',
-        'feature_of_interest',
-        'procedure',
-        'related_observations',
-        'result',
-        'result_null_reason',
-    )
+    fields = list_display
+    readonly_fields = fields
 
 
 admin.site.register(SamplingFeature, SamplingFeatureAdmin)
