@@ -8,32 +8,6 @@ from psycopg2.extras import NumericRange
 from apps.common.models import AbstractObservation
 
 
-class Property(models.Model):
-    """Attribute of an object referenced by a name."""
-    name_id = models.CharField(
-        help_text="Unique and computer-friendly name of the property.",
-        max_length=30,
-        unique=True,
-        editable=False
-    )
-    name = models.CharField(
-        help_text="Human-readable name of the property.",
-        max_length=100
-    )
-    unit = models.CharField(
-        help_text="Unit of observations (physical unit). Same for all "
-                  "observations of the property.",
-        max_length=30
-    )
-
-    class Meta:
-        ordering = ['name']
-        verbose_name_plural = "properties"
-
-    def __str__(self):
-        return self.name
-
-
 class Zsj(models.Model):
     """Basic residential unit in the Czech rep., officially called 'Zakladni
     sidelni jednotka'."""
@@ -88,27 +62,6 @@ class MobilityStream(models.Model):
         return self.src_zsj.name + '->' + self.dst_zsj.name
 
 
-class Process(models.Model):
-    """Process used to generate the result, e.g. estimation."""
-    name_id = models.CharField(
-        help_text="Unique and computer-friendly name of the process.",
-        max_length=30,
-        unique=True,
-        editable=False
-    )
-    name = models.CharField(
-        help_text="Human-readable name of the process.",
-        max_length=100
-    )
-
-    class Meta:
-        ordering = ['name']
-        verbose_name_plural = "processes"
-
-    def __str__(self):
-        return self.name
-
-
 ANY_OCCURRENCE = "0"
 TRANSIT_OCCURRENCE = "1"
 VISIT_OCCURRENCE = "2"
@@ -126,28 +79,10 @@ UNIQUES_CHOICES = (
 )
 
 
-class MobilityObservation(models.Model):
-    phenomenon_time = models.DateTimeField(
-        help_text="Beginning of the observation.",
-        editable=False
-    )
-    phenomenon_time_to = models.DateTimeField(
-        help_text="End of the observation.",
-        editable=False
-    )
-    observed_property = models.ForeignKey(
-        Property,
-        help_text="Phenomenon that was observed, e.g. mobility.",
-        editable=False
-    )
+class MobilityObservation(AbstractObservation):
     feature_of_interest = models.ForeignKey(
         MobilityStream,
         help_text="Stream station where the observation was taken.",
-        editable=False
-    )
-    procedure = models.ForeignKey(
-        Process,
-        help_text="Process used to generate the result, e.g. estimation.",
         editable=False
     )
     src_occurrence_type = models.CharField(
@@ -174,23 +109,34 @@ class MobilityObservation(models.Model):
         null=True,
         editable=False,
     )
-    result_null_reason = models.CharField(
-        help_text="Reason why result is null.",
-        max_length=100,
-    )
+
+    @property
+    def result_for_human(self):
+        if self.result is not None:
+            res_str = "{}".format(self.result)
+        else:
+            reason = self.result_null_reason
+            if(reason == 'HTTP Error 204'):
+                reason = 'differential privacy'
+            res_str = 'unknown because of ' + reason
+        return res_str
+    result_for_human.fget.short_description = 'Result'
 
     class Meta:
-        get_latest_by = 'phenomenon_time'
+        get_latest_by = 'phenomenon_time_range'
         ordering = [
-            '-phenomenon_time',
+            '-phenomenon_time_range',
             'feature_of_interest',
             'procedure',
-            'observed_property'
+            'observed_property',
+            'src_occurrence_type',
+            'dst_occurrence_type',
+            'uniques_type',
         ]
+
         unique_together = (
             (
-                'phenomenon_time',
-                'phenomenon_time_to',
+                'phenomenon_time_range',
                 'observed_property',
                 'feature_of_interest',
                 'procedure',
@@ -200,27 +146,23 @@ class MobilityObservation(models.Model):
             ),
         )
 
-    def _phenomenon_time_is_period(self):
-        "Returns true if phenomenon time is interval."
-        return self.phenomenon_time != self.phenomenon_time_to
-
-    phenomenon_time_is_period = property(_phenomenon_time_is_period)
-
     def __str__(self):
-        if self.result is not None:
-            res_str = "{}".format(self.result)
-        else:
-            res_str = 'unknown because of {}'.format(self.result_null_reason)
+        pt_l_local = localtime(self.phenomenon_time_range.lower)
+        pt_u_local = localtime(self.phenomenon_time_range.upper)
 
         return "{} from {} to {} on {} ({} -> {}, {}) was {}".format(
             self.observed_property.name,
             self.feature_of_interest.src_zsj.name,
             self.feature_of_interest.dst_zsj.name,
-            localtime(self.phenomenon_time).strftime('%Y-%m-%d'),
+            pt_l_local.strftime('%Y-%m-%d'),
+            u'{}–{}'.format(
+                pt_l_local.strftime('%H:%M'),
+                pt_u_local.strftime('%H:%M'),
+            ),
             self.get_src_occurrence_type_display(),
             self.get_dst_occurrence_type_display(),
             self.get_uniques_type_display(),
-            res_str
+            self.result_for_human,
         )
 
 

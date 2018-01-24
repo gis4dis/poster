@@ -1,21 +1,9 @@
 from apps.common.actions import stream_as_csv_action
 from apps.common.list_filter import DateRangeRangeFilter
 from apps.processing.o2.list_filter import AgeRangeFilter
-from .models import Zsj, MobilityStream, Property, Process, \
+from .models import Zsj, MobilityStream, \
     MobilityObservation, SocioDemoObservation
 from django.contrib import admin
-
-
-class PropertyAdmin(admin.ModelAdmin):
-    readonly_fields = (
-        'name_id',
-    )
-
-
-class ProcessAdmin(admin.ModelAdmin):
-    readonly_fields = (
-        'name_id',
-    )
 
 
 class MobilityStreamAdmin(admin.ModelAdmin):
@@ -34,31 +22,54 @@ class ZsjAdmin(admin.ModelAdmin):
 class MobilityObservationAdmin(admin.ModelAdmin):
     actions = [
         stream_as_csv_action("CSV Export (stream)", fields=[
-            'phenomenon_time', 'phenomenon_time_to', 'observed_property', 'feature_of_interest', 'procedure', 'result',
-            'src_occurrence_type', 'dst_occurrence_type', 'uniques_type',
+            'phenomenon_time_from',
+            'phenomenon_time_duration',
+            'observed_property',
+            'feature_of_interest',
+            'procedure',
+            'src_occurrence_type',
+            'dst_occurrence_type',
+            'uniques_type',
+            'result_for_human',
         ]),
     ]
 
-    readonly_fields = (
-        'phenomenon_time',
-        'phenomenon_time_to',
+    list_display = (
+        'phenomenon_time_from',
+        'phenomenon_time_duration_for_human',
         'observed_property',
         'feature_of_interest',
         'procedure',
         'src_occurrence_type',
         'dst_occurrence_type',
         'uniques_type',
-        'result',
+        'result_for_human',
+    )
+    list_filter = (
+        DateRangeRangeFilter,
+        ('observed_property', admin.RelatedOnlyFieldListFilter),
+        ('feature_of_interest', admin.RelatedOnlyFieldListFilter),
+        ('procedure', admin.RelatedOnlyFieldListFilter),
+        'src_occurrence_type',
+        'dst_occurrence_type',
+        'uniques_type',
         'result_null_reason',
     )
+    fields = list_display
+    readonly_fields = fields
 
 
 class SocioDemoObservationAdmin(admin.ModelAdmin):
     actions = [
         stream_as_csv_action("CSV Export (stream)", fields=[
-            'phenomenon_time_from', 'phenomenon_time_duration',
-            'observed_property', 'feature_of_interest', 'procedure',
-            'age_for_human', 'gender', 'occurrence_type',
+            'phenomenon_time_from',
+            'phenomenon_time_duration',
+            'observed_property',
+            'feature_of_interest',
+            'procedure',
+            'age_for_human',
+            'gender',
+            'occurrence_type',
             'result_for_human',
         ]),
     ]
@@ -84,32 +95,10 @@ class SocioDemoObservationAdmin(admin.ModelAdmin):
         'occurrence_type',
         'result_null_reason',
     )
-    fields = (
-        'phenomenon_time_from',
-        'phenomenon_time_duration_for_human',
-        'observed_property',
-        'feature_of_interest',
-        'procedure',
-        'age_for_human',
-        'gender',
-        'occurrence_type',
-        'result_for_human',
-    )
-    readonly_fields = (
-        'phenomenon_time_from',
-        'phenomenon_time_duration_for_human',
-        'observed_property',
-        'feature_of_interest',
-        'procedure',
-        'age_for_human',
-        'gender',
-        'occurrence_type',
-        'result_for_human',
-    )
+    fields = list_display
+    readonly_fields = fields
 
 
-admin.site.register(Property, PropertyAdmin)
-admin.site.register(Process, ProcessAdmin)
 admin.site.register(Zsj, ZsjAdmin)
 admin.site.register(MobilityStream, MobilityStreamAdmin)
 admin.site.register(MobilityObservation, MobilityObservationAdmin)

@@ -3,12 +3,12 @@ import requests
 from contextlib import closing
 
 from apps.common import models as common_models
-from apps.processing.common.obj import *
-from apps.processing.common.filter import *
-from apps.processing.common.time import UTC_P0100
-from apps.processing.o2.models import Zsj, MobilityStream, Property, Process, \
+from apps.utils.obj import *
+from apps.utils.time import UTC_P0100
+from apps.processing.o2.models import Zsj, MobilityStream, \
     OCCURRENCE_CHOICES, UNIQUES_CHOICES, MobilityObservation, ANY_OCCURRENCE, \
     SocioDemoObservation, MALE_GENDER, FEMALE_GENDER
+from apps.common.models import Process, Property
 from datetime import timedelta, datetime, time
 from dateutil.parser import parse
 from django.db.utils import IntegrityError
@@ -149,9 +149,18 @@ def load_mobility(streams):
     if phenomenon_time is None:
         raise ValueError('O2 unknown phenomenon time')
 
-    phenomenon_time_to = phenomenon_time + timedelta(1)
     logger.info('Phenomenon date of mobility observations: {0}'.format(
         phenomenon_time.strftime('%Y-%m-%d')))
+
+
+    def pt_to_range(phenomenon_time):
+        pt_range = DateTimeTZRange(
+            phenomenon_time,
+            phenomenon_time + timedelta(1)
+        )
+        return pt_range
+
+    pt_range = pt_to_range(phenomenon_time)
 
     get_or_create_props()
     observed_property = Property.objects.get(name_id='mobility')
@@ -170,7 +179,7 @@ def load_mobility(streams):
     def get_obs(query_def):
         try:
             obs = MobilityObservation.objects.get(
-                Q_phenomenon_time(phenomenon_time, phenomenon_time_to),
+                phenomenon_time_range=pt_range,
                 observed_property=observed_property,
                 procedure=procedure,
                 feature_of_interest=query_def[0],
@@ -252,8 +261,7 @@ def load_mobility(streams):
                 result_null_reason = 'HTTP Error {}'.format(mob_r.status_code)
 
         obs, created = MobilityObservation.objects.get_or_create(
-            phenomenon_time=phenomenon_time,
-            phenomenon_time_to=phenomenon_time_to,
+            phenomenon_time_range=pt_range,
             observed_property=observed_property,
             feature_of_interest=feature_of_interest,
             procedure=procedure,
@@ -306,8 +314,6 @@ def load_sociodemo(zsjs):
 
     if phenomenon_date is None:
         raise ValueError('O2 unknown phenomenon date')
-
-    # phenomenon_time = DateTimeTZRange(phenomenon_time, phenomenon_time + timedelta(1))
 
     logger.info('Phenomenon date of socio-demo observations: {}'.format(
         phenomenon_date.strftime('%Y-%m-%d')))
