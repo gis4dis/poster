@@ -1,0 +1,154 @@
+{% extends "admin/change_list.html" %}
+
+{% load admin_urls i18n humanize mathtags %}
+
+{% block object-tools-items %}
+{% endblock %}
+
+{% if not is_popup %}
+    {% block breadcrumbs %}
+        <div class="breadcrumbs">
+            <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+            &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+            &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+            &rsaquo; Statistics
+        </div>
+    {% endblock %}
+{% endif %}
+
+{% block content_title %}
+    <h1> Provider Log Summary </h1>
+{% endblock %}
+
+{% block result_list %}
+
+    <div class=”results”>
+        <table>
+
+            <thead>
+            <tr>
+                <th>
+                    <div class=”text”>
+                        <a href=”#”>Provider</a>
+                    </div>
+                </th>
+                <th>
+                    <div class=”text”>
+                        <a href=”#”>Total</a>
+                    </div>
+                </th>
+                <th>
+                    <div class=”text”>
+                        <a href=”#”>
+                            <strong>% Of Total</strong>
+                        </a>
+                    </div>
+                </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for row in summary %}
+                <tr class=”{% cycle 'row1' 'row2' %}”>
+                    <td> {{ row.provider__name }} </td>
+                    <td> {{ row.total | intcomma }} </td>
+                    <td>
+                        <strong>
+                            {{ row.total|default:0|percentof:summary_total.total }}
+                        </strong>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+
+            <tfoot>
+            <tr style="font-weight:bold; border-top:2px solid #DDDDDD;">
+                <td> Total </td>
+                <td> {{ summary_total.total | intcomma }} </td>
+                <td> 100% </td>
+            </tr>
+            </tfoot>
+
+        </table>
+
+        <div style="padding-top: 2em">
+            <h2> Provider logs over time <b>({{ period }})</b></h2>
+
+            <style>
+                .bar-chart {
+                    display: flex;
+                    justify-content: space-around;
+                    height: 160px;
+                    padding-top: 60px;
+                    overflow: hidden;
+                }
+                .bar-chart .bar {
+                    flex: 100%;
+                    align-self: flex-end;
+                    margin-right: 2px;
+                    position: relative;
+                    background-color: #79aec8;
+                }
+                .bar-chart .bar:last-child {
+                    margin: 0;
+                }
+                .bar-chart .bar:hover {
+                    background-color: #417690;
+                }
+                .bar-chart .bar:hover .bar-tooltip {
+                    opacity: 1;
+                }
+
+                .bar-chart .bar .bar-tooltip {
+                    position: relative;
+                    z-index: 999;
+                }
+                .bar-chart .bar .bar-tooltip {
+                    position: absolute;
+                    top: -60px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    text-align: center;
+                    font-weight: bold;
+                    opacity: 0;
+                }
+                .bar-chart .bar .bar-desc {
+                    position: absolute;
+                    bottom: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    text-align: center;
+                    font-weight: bold;
+                    z-index: 999;
+                    overflow: visible;
+
+
+                }
+            </style>
+
+            <div class="results">
+                <div class="bar-chart">
+                    {% for x in summary_over_time %}
+                        <div class="bar" style="height:{{x.pct}}%">
+                            <div class="bar-tooltip">
+                                Count: {{x.total | default:0 | intcomma }}<br>
+                                {{ x.total|default:0|percentof:summary_total.total }} of total<br>
+                            </div>
+                            <div class="bar-desc">
+                                {% if period == 'hour' %}
+                                    {{x.period | date:"H"}}:00
+                                {% elif period == 'day' %}
+                                    {{x.period | date:"d. m."}}
+                                {% elif period == 'month' %}
+                                    {{x.period | date:"M"}}
+                                {% else %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block pagination %}{% endblock %}
