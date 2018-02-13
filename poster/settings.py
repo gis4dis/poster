@@ -9,7 +9,7 @@ env = environ.Env(DEBUG=(bool, False),)      # set default values and casting
 # environ.Env.read_env(env_file=root('.env'))  # reading .env file
 
 BASE_DIR = root()
-
+IMPORT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '../import'))
 
 # Configuration obtained from environment variables
 

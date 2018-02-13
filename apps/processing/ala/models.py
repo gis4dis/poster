@@ -15,7 +15,8 @@ class Observation(AbstractObservation):
         SamplingFeature,
         help_text="Weather station where the observation was taken.",
         related_name='observations',
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING
     )
 
     class Meta:

@@ -45,7 +45,10 @@ class ProviderLog(models.Model):
     """
     Provider Log entry that corresponds with every entry (POST Request) that is sent to the server
     """
-    provider = models.ForeignKey(Provider)
+    provider = models.ForeignKey(
+        Provider,
+        on_delete=models.DO_NOTHING,
+    )
     is_valid = models.BooleanField(default=False)
     content_type = models.CharField(max_length=32, default="application/txt")
     body = models.TextField(null=False, blank=True)

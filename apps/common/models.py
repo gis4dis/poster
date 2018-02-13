@@ -1,7 +1,6 @@
 # from django.db import models
-from django.utils.timezone import localtime
+# from django.utils.timezone import localtime
 from django.contrib.gis.db import models
-
 from django.contrib.postgres import fields as pgmodels
 
 from apps.utils.time import format_delta
@@ -125,7 +124,8 @@ class AbstractObservation(models.Model):
         Property,
         help_text="Phenomenon that was observed, e.g. air temperature.",
         related_name="%(app_label)s_%(class)s_related",
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING,
     )
 
     # NOTE: This field has to be overridden in child classes!
@@ -134,7 +134,8 @@ class AbstractObservation(models.Model):
         AbstractFeature,
         help_text="Weather station where the observation was taken.",
         related_name="%(app_label)s_%(class)s_related",
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING,
     )
 
     procedure = models.ForeignKey(
@@ -142,14 +143,15 @@ class AbstractObservation(models.Model):
         help_text="Process used to generate the result, e.g. measurement or "
                   "average.",
         related_name="%(app_label)s_%(class)s_related",
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING,
     )
 
     related_observations = models.ManyToManyField(
         'self',
         help_text="Measured observations that were used to generate average "
                   "observation, or vice versa.",
-        editable=False
+        editable=False,
     )
 
     result = models.DecimalField(
@@ -158,7 +160,7 @@ class AbstractObservation(models.Model):
         max_digits=8,
         decimal_places=3,
         null=True,
-        editable=False
+        editable=False,
     )
 
     @property

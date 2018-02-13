@@ -34,19 +34,22 @@ class MobilityStream(models.Model):
         Zsj,
         help_text="Source ZSJ, where people are departing.",
         related_name='arrival_streams',
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING
     )
     dst_zsj = models.ForeignKey(
         Zsj,
         help_text="Destination ZSJ, where people are arriving.",
         related_name='to_streams',
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING
     )
     opposite = models.OneToOneField(
         'self',
         help_text="Stream in opposite direction to this stream.",
         editable=False,
         null=True,
+        on_delete=models.DO_NOTHING
     )
 
     class Meta:
@@ -83,7 +86,8 @@ class MobilityObservation(AbstractObservation):
     feature_of_interest = models.ForeignKey(
         MobilityStream,
         help_text="Stream station where the observation was taken.",
-        editable=False
+        editable=False,
+        on_delete=models.DO_NOTHING
     )
     src_occurrence_type = models.CharField(
         help_text="Occurrence type in the source ZSJ.",
@@ -180,6 +184,7 @@ class SocioDemoObservation(AbstractObservation):
         Zsj,
         help_text="ZSJ where the observation was taken.",
         editable=False,
+        on_delete=models.DO_NOTHING
     )
     age = IntegerRangeField(
         help_text="Age of the population.",
