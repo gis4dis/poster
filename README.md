@@ -12,6 +12,8 @@ Application for geo-spatial data collection and processing.
 
 both installed on localhost.
 
+Copy exapmle.env as .env - it should have reasonable defaults.
+
 ## How to run local dev environment
 
 **Basic `docker-compose` commands:**
