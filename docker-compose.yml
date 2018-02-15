@@ -3,8 +3,8 @@ version: '3.1'
 services:
 
 # MAIN WEB CONTAINER
-  poster_web:
-    container_name: poster_web
+  poster-web:
+    container_name: poster-web
     build: .
     image: poster-web:latest
     command: python3 manage.py runserver 0.0.0.0:8000
@@ -13,62 +13,78 @@ services:
     env_file: .env
     volumes:
       - .:/code
-      - poster_media_data:/media
+      - poster-media-data:/media
     depends_on:
-      - poster_postgres
-      - poster_redis
-      - poster_mongo
+      - poster-postgres
+      - poster-redis
+      - poster-mongo
+      - poster-minio
 
 # CELERY WORKER AND BEAT CONTAINERS derived from above
-  poster_celery_worker:
-    container_name: poster_celery_worker
+  poster-celery_worker:
+    container_name: poster-celery_worker
     image: poster-web:latest
     command: python -m celery -A poster worker -l debug
     env_file: .env
     volumes:
-      - poster_media_data
+      - poster-media-data:/media
     depends_on:
-      - poster_web
+      - poster-web
 
-  poster_celery_beat:
-    container_name: poster_celery_beat
+  poster-celery_beat:
+    container_name: poster-celery_beat
     image: poster-web:latest
     command: python -m celery -A poster beat --pidfile= -l debug
     env_file: .env
     volumes:
-      - poster_media_data
+      - poster-media-data:/media
     depends_on:
-      - poster_web
+      - poster-web
+
+# S3 FILESTORAGE
+  poster-minio:
+    container_name: poster-minio
+    image: minio/minio
+    command: server /export
+    ports:
+      - 9000:9000
+    env_file: .env
+    volumes:
+      - ./var/s3storage:/export
+      - ./var/minio:/root/.minio
+    environment:
+      - "MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE"
+      - "MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
 # POSTGRES, REDIS, MONGO DB CONTAINERS
-  poster_postgres:
-    container_name: poster_postgres
+  poster-postgres:
+    container_name: poster-postgres
     image: mdillon/postgis:9.5
     ports:
       - 127.0.0.1:5432:5432
     volumes:
-      - poster_postgres_data:/var/lib/postgresql/data/
+      - poster-postgres-data:/var/lib/postgresql/data/
 
-  poster_redis:
-    container_name: poster_redis
+  poster-redis:
+    container_name: poster-redis
     image: redis:3.0.0
     ports:
       - 127.0.0.1:6379:6379
     volumes:
-      - poster_redis_data:/data
+      - poster-redis-data:/data
 
-  poster_mongo:
-    container_name: poster_mongo
+  poster-mongo:
+    container_name: poster-mongo
     image: mongo:3.2
     command: --storageEngine wiredTiger
     ports:
       - 127.0.0.1:27017:27017
     volumes:
-      - poster_mongo_data:/data/db
+      - poster-mongo-data:/data/db
 
 # VOLUMES DEFINITION
 volumes:
-  poster_postgres_data:
-  poster_redis_data:
-  poster_mongo_data:
-  poster_media_data:
+  poster-postgres-data:
+  poster-redis-data:
+  poster-mongo-data:
+  poster-media-data:

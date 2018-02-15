@@ -9,7 +9,6 @@ env = environ.Env(DEBUG=(bool, False),)      # set default values and casting
 # environ.Env.read_env(env_file=root('.env'))  # reading .env file
 
 BASE_DIR = root()
-IMPORT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '../import'))
 
 # Configuration obtained from environment variables
 
@@ -41,6 +40,7 @@ if DEFAULT_FILE_STORAGE == 'minio_storage.storage.MinioMediaStorage':
     MINIO_STORAGE_USE_HTTPS = env.bool('MINIO_STORAGE_USE_HTTPS')
     MINIO_STORAGE_MEDIA_BUCKET_NAME = env('MINIO_STORAGE_MEDIA_BUCKET_NAME')
     MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = env.bool('MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET')
+    MINIO_STORAGE_MEDIA_URL = "/files/"
 
 
 # Custom configuration - from env
@@ -49,7 +49,7 @@ APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY')
 
 # Custom configuration
 ALLOWED_EXTENSIONS = ['json', 'xml', 'txt']  # importing of data
-
+IMPORT_ROOT = "import/"
 
 # Application definition
 
