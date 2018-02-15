@@ -72,3 +72,8 @@ This will display last 20 log messages from `poster_celery_worker` service.
  
 If you omit the `--tail #` flag it will display **all logs** 
  from **all previous runs**. Use it with caution.
+
+### Import DB dump
+```
+psql postgres://postgres:postgres@localhost:5432/postgres < /path/to/dump
+```
