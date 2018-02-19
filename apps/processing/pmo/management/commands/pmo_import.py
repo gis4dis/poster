@@ -1,6 +1,10 @@
 import logging
 import os
 from contextlib import closing
+from tempfile import TemporaryFile
+from urllib.parse import ParseResult
+
+from django.core.files.storage import default_storage
 from django.utils import timezone
 
 from django.core.management.base import BaseCommand
@@ -29,26 +33,32 @@ class Command(BaseCommand):
                 self.stdout.write("No filename specified")
                 continue
 
-            if not settings.PMO_FTP or type(settings.PMO_FTP) != dict or not settings.IMPORT_ROOT:
+            if not settings.APPLICATION_PMO_FTP_URL or type(settings.APPLICATION_PMO_FTP_URL) != ParseResult or not settings.IMPORT_ROOT:
                 self.stdout.write("Can't read PMO settings. Check you configuration")
                 continue
 
-            local_filedir = os.path.join(settings.IMPORT_ROOT, "providers/PMO", str(timezone.now().strftime("%Y%m%d")))
-            local_filename = os.path.join(local_filedir,  remote_filename)
+            file_dir_path = os.path.normpath(settings.IMPORT_ROOT + '/apps.processing.pmo/' + str(timezone.now().strftime("%Y%m%d")))
+            file_path = os.path.normpath(file_dir_path + "/" + remote_filename)
 
-            with closing(FTP(**settings.PMO_FTP)) as ftp:
+            with closing(FTP(host=settings.APPLICATION_PMO_FTP_URL.hostname,
+                             user=settings.APPLICATION_PMO_FTP_URL.username,
+                             passwd=settings.APPLICATION_PMO_FTP_URL.password,
+                             )) as ftp:
+
                 try:
-                    os.makedirs(local_filedir, 0o770, exist_ok=True)
+                    gen_name = default_storage.generate_filename(file_path)
 
-                    with open(local_filename, 'wb') as f:
+                    with TemporaryFile() as f:
                         res = ftp.retrbinary('RETR %s' % remote_filename, f.write)
 
+                        f.seek(0)
+                        default_storage.save(gen_name, f)
                         if not res.startswith('226 Transfer complete'):
-                            self.stderr.write('Downloaded of file {0} is not compile.'.format(remote_filename))
-                            os.remove(local_filename)
+                            self.stderr.write('Download of file {0} is not complete.'.format(remote_filename))
+                            # default_storage.delete(gen_name)
                             continue
 
-                    self.stdout.write("File {} was successfully downloaded to {}".format(remote_filename, local_filename))
+                    self.stdout.write("File {} was successfully downloaded to {}".format(remote_filename, gen_name))
                     continue
 
                 except Exception as e:

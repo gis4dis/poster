@@ -68,7 +68,7 @@ class ImportView(View):
             # Generate dir path: /<settings.IMPORT_ROOT>/<provider>/<year>/<month>
             # Example:           /import/abc/2017/01
             #
-            file_dir_path = os.path.normpath(IMPORT_ROOT+'/'+code+'/'+year+'/'+month)
+            file_dir_path = os.path.normpath(IMPORT_ROOT+'/apps.importing/'+code+'/'+year+'/'+month)
 
             # Generate filename: <%Y%m%d-%H%M%S>_(valid|invalid)_<file_name>_<uuid4>.<ext>
             # Example:           20171231-235959_valid_data_e6911354-2f49-40d3-827d-43a5015a673b.xml
