@@ -10,6 +10,10 @@ django-celery-beat==1.1.0
 django-celery-results==1.0.1
 django-environ==0.4.4
 django-minio-storage==0.1.0
+ephem==3.7.6.0
+gevent==1.2.2
+greenlet==0.4.13
+gunicorn==19.7.1
 idna==2.5
 kombu==4.1.0
 minio==2.2.1
