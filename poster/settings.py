@@ -28,7 +28,7 @@ DATABASES = {
     'default': env.db(engine='django.contrib.gis.db.backends.postgis')
 }
 
-REDIS_URL = env('REDIS_URL')
+REDIS_URL = env('REDIS_URL', default=None)
 
 # CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', default=None) or REDIS_URL
@@ -49,8 +49,8 @@ if DEFAULT_FILE_STORAGE == 'minio_storage.storage.MinioMediaStorage':
 
 
 # Custom configuration - from env
-APPLICATION_PMO_FTP_URL = urlparse(env('APPLICATION_PMO_FTP_URL'))
-APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY')
+APPLICATION_PMO_FTP_URL = urlparse(env('APPLICATION_PMO_FTP_URL', default=None))
+APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY', default=None)
 
 # Custom configuration
 ALLOWED_EXTENSIONS = ['json', 'xml', 'txt']  # importing of data
