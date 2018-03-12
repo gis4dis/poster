@@ -77,3 +77,51 @@ If you omit the `--tail #` flag it will display **all logs**
 ```
 psql postgres://postgres:postgres@localhost:5432/postgres < /path/to/dump
 ```
+
+## Top level files
+
+### *.buildpacks*
+Buildpacks are used when building slug for deployment. Below are some examples.
+
+```
+https://github.com/heroku/heroku-buildpack-apt
+https://github.com/mojodna/heroku-buildpack-gdal.git
+https://github.com/heroku/heroku-buildpack-python.git#009d0ddb
+https://github.com/heroku/heroku-buildpack-python.git
+https://github.com/weibeld/heroku-buildpack-run.git
+```
+
+### *Aptfile*
+ * used by *https://github.com/heroku/heroku-buildpack-apt*
+
+Contains list of "to-be-installed" apt packages for the build.
+
+### *buildpack-run.sh*
+ * used by *https://github.com/weibeld/heroku-buildpack-run.git*
+
+Contains shell script that will be run on build.
+
+### *dcmanage.sh*
+Shell wrapper for docker-compose commands that shoud be used to run "manage.py" commands
+but on development docker environment
+
+### *docker-compose.yml*
+Basic docker-compose file used to spin up development environment.
+
+### *example.env*
+Example environment variable settings for the application.
+
+### *manage.py*
+Standard Django manage.py script
+ * used by *https://github.com/heroku/heroku-buildpack-python.git*
+
+### *Procfile*
+Processes defined to be run on container deployment to server
+
+### *requirements.txt*
+Python dependencies file.
+ * used by *https://github.com/heroku/heroku-buildpack-python.git*
+
+### *runtime.txt*
+Python runtime version dependency.
+ * used by *https://github.com/heroku/heroku-buildpack-python.git*

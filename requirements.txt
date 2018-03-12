@@ -1,10 +1,12 @@
 amqp==2.2.2
 beautifulsoup4==4.6.0
 billiard==3.5.0.3
-celery==4.1.0
+# https://github.com/celery/django-celery-beat/issues/7
+# UNUSABLE! celery==4.1.0
+celery==4.0.2
 certifi==2017.11.5
 chardet==3.0.4
-Django==2.0.2
+Django==2.0.3
 django-celery==3.2.2
 django-celery-beat==1.1.0
 django-celery-results==1.0.1
@@ -19,10 +21,11 @@ kombu==4.1.0
 minio==2.2.1
 psycopg2-binary==2.7.4
 python-dateutil==2.6.1
-pytz==2017.2
+pytz==2018.3
 redis==2.10.6
 requests==2.18.3
 six==1.11.0
 unicodecsv==0.14.1
 urllib3==1.22
 vine==1.1.4
+whitenoise==3.3.1

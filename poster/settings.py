@@ -1,28 +1,32 @@
 from urllib.parse import urlparse
 import environ
 import os
+import sys
 
 # Basic environ configuration to get all environment variables
 
 root = environ.Path(__file__) - 2            # two folder back (/a/b/c/ - 2 = /a/)
-env = environ.Env(DEBUG=(bool, False),)      # set default values and casting
+env = environ.Env(DJANGO_DEBUG=(bool, False),)      # set default values and casting
 # environ.Env.read_env(env_file=root('.env'))  # reading .env file
 
 BASE_DIR = root()
 
 # Configuration obtained from environment variables
 
-DEBUG = env('DJANGO_DEBUG')
+DEBUG = env.bool('DJANGO_DEBUG')
 TEMPLATE_DEBUG = DEBUG
 
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default='').split(',')
 
-STATIC_ROOT = env('DJANGO_STATIC_ROOT', default='/static')
+# STATIC_ROOT = env('DJANGO_STATIC_ROOT', default='/static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = env('DJANGO_STATIC_URL', default='/static/')
 MEDIA_ROOT = env('DJANGO_MEDIA_ROOT', default='/media')
 MEDIA_URL = env('DJANGO_MEDIA_URL', default='/media/')
+
+
 
 DATABASES = {
     'default': env.db(engine='django.contrib.gis.db.backends.postgis')
@@ -55,6 +59,10 @@ APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY', default=None)
 # Custom configuration
 ALLOWED_EXTENSIONS = ['json', 'xml', 'txt']  # importing of data
 IMPORT_ROOT = "import/"
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+LOG_LEVEL = env('DJANGO_LOG_LEVEL', default='ERROR')
 
 # Application definition
 
@@ -84,6 +92,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -144,3 +153,19 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': LOG_LEVEL,
+        },
+    },
+}

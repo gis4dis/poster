@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Test page{% endblock %}
+
+{% block content %}
+
+
+    {% if request.user.is_superuser %}
+                CUSTOM:        {{ settings.TEMPLATE_DEBUG }}
+        <table>
+            <thead>
+            <tr>
+                <th>name</th>
+                <th>value</th>
+            </tr>
+            </thead>
+            <tbody>
+
+
+                {% for key, value in settings.items %}
+                    <tr>
+                        <td>{{key}}</td>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endfor %}
+
+{#                <td>settings.DEBUG</td>#}
+{#                <td>{{ settings.DEBUG }}</td>#}
+
+
+            </tbody>
+        </table>
+        <hr>
+
+
+    {% else %}
+        You are not superuser!
+    {% endif %}
+
+{% endblock %}

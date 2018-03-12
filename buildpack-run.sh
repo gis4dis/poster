@@ -1,0 +1,1 @@
+find /app -name \*.pyc -delete
