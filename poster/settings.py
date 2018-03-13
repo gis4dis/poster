@@ -57,11 +57,12 @@ APPLICATION_PMO_FTP_URL = urlparse(env('APPLICATION_PMO_FTP_URL', default=None))
 APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY', default=None)
 
 # Custom configuration
+CELERY_TIMEZONE = 'UTC'   # Due to https://github.com/celery/celery/issues/4184
+CELERY_ENABLE_UTC = True  # Due to https://github.com/celery/celery/issues/4184
 ALLOWED_EXTENSIONS = ['json', 'xml', 'txt']  # importing of data
-IMPORT_ROOT = "import/"
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
-# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+IMPORT_ROOT = "import/"  # inside a media bucket
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'  # Whitenoise is server staticfiles wrapper
+
 LOG_LEVEL = env('DJANGO_LOG_LEVEL', default='ERROR')
 
 # Application definition
