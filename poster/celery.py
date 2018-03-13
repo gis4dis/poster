@@ -20,3 +20,18 @@ app.autodiscover_tasks()
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+
+@app.task(bind=True)
+def debug_logging(self):
+    import sys
+    import logging
+    # Get an instance of a logger
+    logger = logging.getLogger(__name__)
+    print('Celery debug_task testing message STDOUT', file=sys.stdout)
+    print('Celery debug_task testing message STDERR', file=sys.stderr)
+    logger.debug('Celery debug_task testing message logger DEBUG')
+    logger.info('Celery debug_task testing message logger INFO')
+    logger.warning('Celery debug_task testing message logger WARNING')
+    logger.error('Celery debug_task testing message logger ERROR')
+    logger.fatal('Celery debug_task testing message logger FATAL')
