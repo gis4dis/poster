@@ -71,7 +71,7 @@ props_to_provider_idx = {
         'power_voltage': 8,
     },
     '11359202': {
-        'precipitation': 5,
+        'precipitation': 6,
         'air_temperature': 1,
         'air_humidity': 7,
         'ground_air_temperature': 2,
