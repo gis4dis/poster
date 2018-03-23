@@ -27,10 +27,11 @@ MEDIA_ROOT = env('DJANGO_MEDIA_ROOT', default='/media')
 MEDIA_URL = env('DJANGO_MEDIA_URL', default='/media/')
 
 
-
 DATABASES = {
     'default': env.db(engine='django.contrib.gis.db.backends.postgis')
 }
+# https://github.com/joke2k/django-environ/issues/175
+DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 REDIS_URL = env('REDIS_URL', default=None)
 
