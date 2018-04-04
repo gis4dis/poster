@@ -15,9 +15,16 @@ both installed on localhost.
 
 ## How to run local dev environment
 
-- Copy exapmle.env as .env - it should have reasonable defaults.
+- run
+```bash
+git clone git@github.com:gis4dis/poster.git
+cd poster
 
-- If you have PostgreSQL running at port 5432, stop it.
+# copy exapmle.env as .env - it should have reasonable defaults.
+cp example.env .env
+```
+
+- If you have PostgreSQL (or something else) running at local port 5432, stop it.
 
 - run
 ```bash 
