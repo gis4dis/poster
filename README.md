@@ -34,9 +34,11 @@ docker-compose up
 
 # Make django migrations (creates DB structures).
 ./dcmanage.sh migrate
+# Windows: docker-compose run --rm poster-web python manage.py migrate
 
 # Create Django superuser
 ./dcmanage.sh createsuperuser
+# Windows: docker-compose run --rm poster-web python manage.py createsuperuser
 ```
 - Login with superuser at http://localhost:8000/admin
 
