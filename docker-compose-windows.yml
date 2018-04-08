@@ -7,15 +7,17 @@ services:
     container_name: poster-web
     build: .
     image: poster-web:latest
-    command: bash -c "python3 manage.py collectstatic --no-input; python3 manage.py runserver 0.0.0.0:8000"
+    command: bash runserver.sh
     ports:
       - 8000:8000
     env_file: .env
     volumes:
       - .:/code
       - poster-media-data:/media
+    networks:
+      - local
     depends_on:
-      - poster-postgres
+#      - poster-postgres
       - poster-redis
       - poster-mongo
       - poster-minio
@@ -28,6 +30,8 @@ services:
     env_file: .env
     volumes:
       - poster-media-data:/media
+    networks:
+      - local
     depends_on:
       - poster-web
 
@@ -38,6 +42,8 @@ services:
     env_file: .env
     volumes:
       - poster-media-data:/media
+    networks:
+      - local
     depends_on:
       - poster-web
 
@@ -52,6 +58,8 @@ services:
     volumes:
       - ./var/s3storage:/export
       - ./var/minio:/root/.minio
+    networks:
+      - local
     environment:
       - "MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE"
       - "MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -64,6 +72,8 @@ services:
       - 127.0.0.1:5432:5432
     volumes:
       - poster-postgres-data:/var/lib/postgresql/data/
+    networks:
+      - local
 
   poster-redis:
     container_name: poster-redis
@@ -72,6 +82,8 @@ services:
       - 127.0.0.1:6379:6379
     volumes:
       - poster-redis-data:/data
+    networks:
+      - local
 
   poster-mongo:
     container_name: poster-mongo
@@ -81,6 +93,8 @@ services:
       - 127.0.0.1:27017:27017
     volumes:
       - poster-mongo-data:/data/db
+    networks:
+      - local
 
 # VOLUMES DEFINITION
 volumes:
@@ -88,3 +102,7 @@ volumes:
   poster-redis-data:
   poster-mongo-data:
   poster-media-data:
+
+networks:
+  local:
+    driver: bridge
