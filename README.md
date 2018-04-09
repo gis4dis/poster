@@ -146,3 +146,27 @@ Python dependencies file.
 ### *runtime.txt*
 Python runtime version dependency.
  * used by *https://github.com/heroku/heroku-buildpack-python.git*
+
+
+## Windows quickstart
+Run docker and initialize DB
+```
+docker-compose -f docker-compose-windows.yml up
+docker-compose -f docker-compose-windows.yml run --rm poster-web python manage.py migrate
+docker-compose -f docker-compose-windows.yml run --rm poster-web python manage.py createsuperuser
+```
+
+Restart only web process (in case of error or so)
+```
+docker-compose -f docker-compose-windows.yml restart poster-web
+```
+
+Stop running docker containers (for example if docker-compose up is run in detached mode [-d])
+```
+docker-compose -f docker-compose-windows.yml down
+```
+
+Stop running docker containers and remove all volumes (!!! This will clear the database !!! use with caution !)
+```
+docker-compose -f docker-compose-windows.yml down -v
+```
