@@ -149,30 +149,81 @@ Python runtime version dependency.
 
 
 ## Windows quickstart
-Run docker and initialize DB
+
+### install prerequisites
+You need to have docker and docker-compose installed. They are bundled together
+on windows.
+Follow basic tutorial to setup Docker, Docker-compose and (Virtualbox)
+https://docs.docker.com/docker-for-windows/install/
+
+### preparation
+After cloning repository you need to create custom .env file. Reasonable defaults
+ are in example.env so just start with copying this file.
+
+Then because of windows handling all stuff differently then normal OS, you need to
+ specify path in the docker-compose-windows.yml. So edit line 15 `- //c/Users/<path to code>:/code` and
+ change it to the path you have the source code. eg. `- //c/Users/Carl/code:/code`
+
+Please note the forward slashes, `//` starting notation and the fact, that on Windows,
+ you can only mount folders under `C:/Users` or you need to setup custom sharing in
+ docker on Windows.
+
+### The first run
+During the first run the initial configuration is done on the background.
+ This results in longer startup time. Please be patient.
+
+Start docker containers with docker-compose.
+Because windows have different settings for networking and stuff, there is second
+ file that is used for configuration called `docker-compose-windows.yml`
+
+Run basic command to spin up all required containers in first docker terminal:
 ```
 docker-compose -f docker-compose-windows.yml up
+```
+
+This terminal needs to be running all the time. It displays log of all containers,
+ which can be handy while debugging stuff. It takes some time to spin up all containers
+ on the first run, so again, please be patient.
+
+Then you can run second docker terminal to make maintenance of the application
+ like creating database tables or creating local admin user so you can control the
+ system.
+
+Run these command in SECOND terminal
+```
 docker-compose -f docker-compose-windows.yml run --rm poster-web python manage.py migrate
 docker-compose -f docker-compose-windows.yml run --rm poster-web python manage.py createsuperuser
 ```
 
-Restart only web process (in case of error or so)
-This is sometimes needed on slower machines where Postgress starts slower than web-server
+### FAQ
+
+#### Restarting web container
+In some cases (during the first run mostly) it happens that web container will spin
+ up faster than the database (Postgres) container. This results in error in the
+ FIRST terminal. Don't stop that console - you just need to restart web container
+
+So - To restart the web process container run in SECOND terminal:
 ```
 docker-compose -f docker-compose-windows.yml restart poster-web
 ```
+You can also see log changing in the FIRST terminal.
 
-Stop running docker containers (for example if docker-compose up is run in detached mode [-d])
+#### Stopping the docker
+You can stop the docker containers by pressing CTRL+C in the FIRST terminal and waiting.
+If you close that terminal it is possible that docker will keep running. In this case you can
+use `down` command to stop all defined running containers.
 ```
 docker-compose -f docker-compose-windows.yml down
 ```
 
+#### Stopping containers and removing all the data
 Stop running docker containers and remove all volumes (!!! This will clear the database !!! use with caution !)
 ```
 docker-compose -f docker-compose-windows.yml down -v
 ```
 
-Stop docker machine on Windows - otherwise it will break the stuff on restart of Windows machine
+#### Stop docker virtual machine on windows
+Stop docker machine on Windows - otherwise it will require to Force-stop stuff while restarting the Windows machine.
 ```
 docker-machine stop
 ```

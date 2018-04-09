@@ -7,17 +7,17 @@ services:
     container_name: poster-web
     build: .
     image: poster-web:latest
-    command: bash runserver.sh
+    command: bash -c 'sleep 5; while true; do bash runserver.sh; sleep 2; done'
     ports:
       - 8000:8000
     env_file: .env
     volumes:
-      - .:/code
+      - //c/Users/<path to code>:/code
       - poster-media-data:/media
     networks:
       - local
     depends_on:
-#      - poster-postgres
+      - poster-postgres
       - poster-redis
       - poster-mongo
       - poster-minio
