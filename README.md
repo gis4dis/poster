@@ -157,6 +157,7 @@ docker-compose -f docker-compose-windows.yml run --rm poster-web python manage.p
 ```
 
 Restart only web process (in case of error or so)
+This is sometimes needed on slower machines where Postgress starts slower than web-server
 ```
 docker-compose -f docker-compose-windows.yml restart poster-web
 ```
@@ -169,4 +170,9 @@ docker-compose -f docker-compose-windows.yml down
 Stop running docker containers and remove all volumes (!!! This will clear the database !!! use with caution !)
 ```
 docker-compose -f docker-compose-windows.yml down -v
+```
+
+Stop docker machine on Windows - otherwise it will break the stuff on restart of Windows machine
+```
+docker-machine stop
 ```
