@@ -12,7 +12,7 @@ services:
       - 8000:8000
     env_file: .env
     volumes:
-      - //c/Users/<path to code>:/code
+      - C:\\Users\\Mingle\\poster-master:/code
       - poster-media-data:/media
     networks:
       - local
