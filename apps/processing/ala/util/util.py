@@ -103,6 +103,7 @@ processes_def = [
     ('measure', {'name': u'measuring'}),
     ('avg_hour', {'name': u'hourly average'}),
     ('avg_day', {'name': u'daily average'}),
+    ('anomaly',{'name':u'anomaly score'})
 ]
 
 

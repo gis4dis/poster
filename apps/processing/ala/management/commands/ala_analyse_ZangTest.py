@@ -20,27 +20,31 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        stations = util.get_or_create_stations()
-        # station = stations[0]
+
         station = SamplingFeature.objects.get(id_by_provider='11359205')
 
-        props = util.get_or_create_props()
-        # prop = props[1]
         prop = Property.objects.get(name_id='air_temperature')
 
-        processes = util.get_or_create_processes()
-        measure_process = processes[0]
+        process = Process.objects.get(name_id='measure')
 
         obss = Observation.objects.filter(
             feature_of_interest=station
             , observed_property=prop
-            , procedure=measure_process
+            , procedure=process
         )
+        process2 = Process.objects.get(name_id='anomaly')
 
         for obj in obss:
-            print(obj.feature_of_interest, obj.result)
-            print(obj.phenomenon_time_range.lower,'\r\n')
+            result = 233
+            result_null_reason = ''
+            obs = Observation.objects.create(
+                phenomenon_time_range=obj.phenomenon_time_range,
+                observed_property=obj.observed_property,
+                feature_of_interest=obj.feature_of_interest,
+                procedure=process2,
+                result=result,
+                result_null_reason=result_null_reason,
+            )
+            obs.related_observations.set(obss)
 
-        print(station)
-        print(prop)
-        print(measure_process)
+        print("finish")
