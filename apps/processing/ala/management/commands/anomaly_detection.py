@@ -47,6 +47,7 @@ def anomaly_detect(observation, detector_method='default_detector'):
     anomalies = my_detector.get_anomalies()
     if anomalies:
         time_period = anomalies[0].get_time_window()
+    #TODO the anomaly point
 
     score = my_detector.get_all_scores()
 
