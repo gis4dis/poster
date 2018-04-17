@@ -33,39 +33,14 @@ class Command(BaseCommand):
                     procedure=Process.objects.get(name_id='measure')
                 ).order_by('phenomenon_time_range')
 
-                anomaly_detect(user_list_obj, 'default_detector')
-                # results_dic = dict()
-                # i = 0
-                # for line in user_list_obj:
-                #     results_dic[time.mktime(line.phenomenon_time_range.lower.astimezone(pytz.utc).timetuple())] = float(line.result)
-                #     i+=1
-                #     #print(time.mktime(line.phenomenon_time_range.lower.astimezone(pytz.utc).timetuple()))
-                #     # print(line.feature_of_interest,  line.result, type(line.result))
-                #
-                # # for key in results_dic:
-                # #     print(key, results_dic[key])
-                #
-                # my_detector = AnomalyDetector(results_dic,None, False, None, None, 'default_detector', None, None, None)
-                # anomalies = my_detector.get_anomalies()
-                # if anomalies:
-                #     time_period = anomalies[0].get_time_window()
-                #
-                # score = my_detector.get_all_scores()
-                # for timestamp, value in score.iteritems():
-                #     print(timestamp, value,results_dic[timestamp])
-                #
-                # #print(len(time_period),time_period)
+                anomalyScore = anomaly_detect(user_list_obj, 'default_detector')
+                anomaly_score_save(user_list_obj,anomalyScore)
 
 
 def anomaly_detect(observation, detector_method='default_detector'):
     results_dic = dict()
     for line in observation:
         results_dic[time.mktime(line.phenomenon_time_range.lower.astimezone(pytz.utc).timetuple())] = float(line.result)
-        # print(time.mktime(line.phenomenon_time_range.lower.astimezone(pytz.utc).timetuple()))
-        # print(line.feature_of_interest,  line.result, type(line.result))
-
-    # for key in results_dic:
-    #     print(key, results_dic[key])
 
     my_detector = AnomalyDetector(results_dic, None, False, None, None, detector_method, None, None, None)
     anomalies = my_detector.get_anomalies()
@@ -76,9 +51,7 @@ def anomaly_detect(observation, detector_method='default_detector'):
     for timestamp, value in score.iteritems():
         print(timestamp, value, results_dic[timestamp])
 
-    # print(list(score.itervalues()))
-    anomaly_score_save(observation, list(score.itervalues()))
-    # print(len(time_period),time_period)
+    return list(score.itervalues())
 
 
 def anomaly_score_save(raw_obss, score):
