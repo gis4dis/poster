@@ -33,6 +33,7 @@ class Command(BaseCommand):
                     procedure=Process.objects.get(name_id='measure')
                 ).order_by('phenomenon_time_range')
 
+                #mainpart
                 anomalyScore = anomaly_detect(user_list_obj, 'default_detector')
                 anomaly_score_save(user_list_obj,anomalyScore)
 
@@ -48,8 +49,6 @@ def anomaly_detect(observation, detector_method='default_detector'):
         time_period = anomalies[0].get_time_window()
 
     score = my_detector.get_all_scores()
-    for timestamp, value in score.iteritems():
-        print(timestamp, value, results_dic[timestamp])
 
     return list(score.itervalues())
 
