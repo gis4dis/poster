@@ -14,7 +14,7 @@ We use a local version modified from 0.4
 anomaly_detect(list_obss, detector_method='default_detector')
 ```
 *list_obss*:A list of Observation objects made by SELECT code (Sort by time series)  
-*detector_method*:The anomaly method you choose, default is "???//TODO"
+*detector_method*:The anomaly method you choose, default is "default_detector", which is a method considered both Exponential Moving Avg and derivative.
 
 return:A list of Anomaly Score(same index as _list_obss_)
 
@@ -40,10 +40,23 @@ anomaly_score_save(list_obss,anomalyScore)
 
 **Notice**:  
 _list_obss_ must sort by time series
-_anomalies_ is a list inside the anomaly_detect(), 
+_anomalies_ is a list inside the anomaly_detect().
 
 ## Anomaly detection algorithms
-???//TODO
+Available algorithms and their additional parameters are:
+```
+1.  'bitmap_detector': # behaves well for huge data sets.
+
+2.  'default_detector': # it is the default detector, and is good for continuously changing data.
+
+3.  'derivative_detector': # meant to be used when abrupt changes of value are of main interest.
+
+4.  'exp_avg_detector': # meant to be used when values are in a roughly stationary range.
+                        # and it is the default refine algorithm.
+
+```
+**Notice**:
+The four existing algorithms may be not suitable for the anomaly detection of each property. More suitable algorithms will be added in the future work.
 
 ## File organize
 **Added**:  
