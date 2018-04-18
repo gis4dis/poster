@@ -1,14 +1,14 @@
-#Anomaly Detection
- Write by Kaiyue Zang, Jiemin Zhou
+# Anomaly Detection
+Write by Kaiyue Zang, Jiemin Zhou
  
-##Main goal
+## Main goal
 Finding Outliers in a Time Series
 
-##Requirements
+## Requirements
 luminol(https://github.com/linkedin/luminol)  
 We use a local version modified from 0.4
 
-##Basic functions
+## Basic functions
 + anomaly_detect  
 ```
 anomaly_detect(list_obss, detector_method='default_detector')
@@ -42,10 +42,10 @@ anomaly_score_save(list_obss,anomalyScore)
 _list_obss_ must sort by time series
 _anomalies_ is a list inside the anomaly_detect(), 
 
-##Anomaly detection algorithms
+## Anomaly detection algorithms
 ???//TODO
 
-##File organize
+## File organize
 **Added**:  
 + Local luminol package
 + apps/proyessing/ala/management/commands/anomaly_detection.py  
