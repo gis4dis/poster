@@ -38,9 +38,9 @@ class Command(BaseCommand):
                 anomaly_score_save(user_list_obj,anomalyScore)
 
 
-def anomaly_detect(observation, detector_method='default_detector'):
+def anomaly_detect(list_obss, detector_method='default_detector'):
     results_dic = dict()
-    for line in observation:
+    for line in list_obss:
         results_dic[time.mktime(line.phenomenon_time_range.lower.astimezone(pytz.utc).timetuple())] = float(line.result)
 
     my_detector = AnomalyDetector(results_dic, None, False, None, None, detector_method, None, None, None)
@@ -54,17 +54,17 @@ def anomaly_detect(observation, detector_method='default_detector'):
     return list(score.itervalues())
 
 
-def anomaly_score_save(raw_obss, score):
+def anomaly_score_save(list_obss, score):
     anomaly_process = Process.objects.get(name_id='anomaly')
 
-    for i in range(0, len(raw_obss)):
+    for i in range(0, len(list_obss)):
         new_obs = Observation.objects.create(
-            phenomenon_time_range=raw_obss[i].phenomenon_time_range,
-            observed_property=raw_obss[i].observed_property,
-            feature_of_interest=raw_obss[i].feature_of_interest,
+            phenomenon_time_range=list_obss[i].phenomenon_time_range,
+            observed_property=list_obss[i].observed_property,
+            feature_of_interest=list_obss[i].feature_of_interest,
             procedure=anomaly_process,
             result=score[i],
             result_null_reason='',
         )
-        new_obs.related_observations.set(raw_obss)
+        new_obs.related_observations.set(list_obss)
     print("Saved successfully")
