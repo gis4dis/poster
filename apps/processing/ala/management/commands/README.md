@@ -25,7 +25,7 @@ anomaly_score_save(list_obss, score)
 *list_obss*:A list of Observation objects made by SELECT code (Sort by time series)  
 *score*:The return value from anomaly_detect()
 
-return: viod  
+return: void  
   
 **Example**:
 ```
@@ -39,7 +39,7 @@ anomaly_score_save(list_obss,anomalyScore)
 ```
 
 **Notice**:  
-_list_obss_ must sort by time series
+_list_obss_ **must** sort by time series  
 _anomalies_ is a list inside the anomaly_detect().
 
 ## Anomaly detection algorithms
@@ -59,10 +59,11 @@ Available algorithms and their additional parameters are:
 The four existing algorithms may be not suitable for the anomaly detection of each property. More suitable algorithms will be added in the future work.
 
 ## File organize
-**Added**:  
+### Added:  
 + Local luminol package
 + apps/proyessing/ala/management/commands/anomaly_detection.py  
 + apps/proyessing/ala/management/commands/anomaly_delete.py  
 + apps/proyessing/ala/management/commands/README.md  
-**changed**:  
+
+### changed:  
 + apps/processing/ala/util/util.py
