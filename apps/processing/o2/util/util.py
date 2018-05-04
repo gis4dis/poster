@@ -17,7 +17,7 @@ from psycopg2.extras import DateTimeTZRange, NumericRange
 import logging
 import urllib3
 
-from poster.local_settings import O2_API_KEY
+from django.conf import settings
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -126,7 +126,7 @@ def load_mobility(streams):
     phenomenon_time = None
 
     payload = {
-        'apikey': O2_API_KEY
+        'apikey': settings.APPLICATION_O2_API_KEY
     }
     # url = 'https://developer.o2.cz/mobility/sandbox/api/info/'
     url = 'https://developer.o2.cz/mobility/api/info'
@@ -222,7 +222,7 @@ def load_mobility(streams):
             'fromType': src_occurrence_type,
             'toType': dst_occurrence_type,
             'uniques': uniques_type,
-            'apikey': O2_API_KEY
+            'apikey': settings.APPLICATION_O2_API_KEY
         }
         with closing(requests.get(url, params=payload, verify=False)) as \
                 mob_r:
@@ -292,7 +292,7 @@ def load_sociodemo(zsjs):
     phenomenon_date = None
 
     payload = {
-        'apikey': O2_API_KEY
+        'apikey': settings.APPLICATION_O2_API_KEY
     }
     # url = 'https://developer.o2.cz/sociodemo/sandbox/api/info'
     url = 'https://developer.o2.cz/sociodemo/api/info'
@@ -440,7 +440,7 @@ def load_sociodemo(zsjs):
         payload = {
             'occurenceType': occurrence_type,
             'hour': hour,
-            'apikey': O2_API_KEY
+            'apikey': settings.APPLICATION_O2_API_KEY
         }
         payload.update(age_gender_type['url-params'])
         with closing(requests.get(url, params=payload, verify=False)) as \
