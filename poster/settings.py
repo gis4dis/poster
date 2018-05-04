@@ -2,6 +2,7 @@ from urllib.parse import urlparse
 import environ
 import os
 import sys
+import apps.mc.settings as MC_SETTINGS
 
 # Basic environ configuration to get all environment variables
 
@@ -56,6 +57,7 @@ if DEFAULT_FILE_STORAGE == 'minio_storage.storage.MinioMediaStorage':
 # Custom configuration - from env
 APPLICATION_PMO_FTP_URL = urlparse(env('APPLICATION_PMO_FTP_URL', default=None))
 APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY', default=None)
+APPLICATION_MC = MC_SETTINGS
 
 # Custom configuration
 CELERY_TIMEZONE = 'UTC'   # Due to https://github.com/celery/celery/issues/4184
