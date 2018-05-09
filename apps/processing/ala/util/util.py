@@ -73,6 +73,56 @@ props_def = [
         "unit": 'W/m²',
         "default_mean": 'apps.common.aggregate.arithmetic_mean'
     }),
+    ('atmospheric_pressure', {
+        "name": 'atmospheric pressure ',
+        'unit': 'hPa',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('co', {
+        "name": 'CO',
+        'unit': 'mg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('no', {
+        "name": 'NO',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('no2', {
+        "name": 'NO₂',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('nox', {
+        "name": 'NOₓ',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('o3', {
+        "name": 'O₃',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('pm1', {
+        "name": 'PM1',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('pm2.5', {
+        "name": 'PM2.5',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('pm10', {
+        "name": 'PM10',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
+    ('so2', {
+        "name": 'SO₂',
+        'unit': 'µg/m³',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean'
+    }),
 ]
 
 props_to_provider_idx = {
@@ -197,7 +247,7 @@ def load(station, day):
         rows = list(reader)
         num_rows = len(rows)
         expected_rows = 24 * 60 * 60 // \
-                        station_interval[station.id_by_provider] + 1
+            station_interval[station.id_by_provider] + 1
         if num_rows != expected_rows:
             logger.warning("Expected {} rows, found {}. Station {}.".format(
                 expected_rows, num_rows, station.id_by_provider))
@@ -214,7 +264,8 @@ def load(station, day):
                     prev_time if prop.name_id == 'precipitation' else time
                 time_to = time
                 time_range_boundary = '[]' if time_from == time_to else '[)'
-                pt_range = DateTimeTZRange(time_from, time_to, time_range_boundary)
+                pt_range = DateTimeTZRange(
+                    time_from, time_to, time_range_boundary)
                 if (prop.name_id not in
                         props_to_provider_idx[station.id_by_provider]):
                     continue
@@ -294,7 +345,7 @@ def create_avgs(station, day):
                 procedure=measure_process
             )
             expected_values = 60 * 60 // \
-                              station_interval[station.id_by_provider]
+                station_interval[station.id_by_provider]
             if len(obss) != expected_values:
                 result = None
                 result_null_reason = 'missing observations'
