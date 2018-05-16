@@ -59,6 +59,9 @@ For more information see *Dockerfile*.
 This command removes created temporary volumes that were
  attached to docker containers.
  
+#### `docker-compose down -v`
+This command removes created named volumes, e.g. the database.
+ 
 When the docker containers are not properly shut, 
  the attached volume(s) can in some cases stay
  detached but created and running `docker-compose up` will
