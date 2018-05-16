@@ -17,8 +17,11 @@ processes_def = [
 
 
 def load_data(apps, schema_editor):
-    get_or_create_objs(Property, props_def, 'name_id')
-    get_or_create_objs(Process, processes_def, 'name_id')
+    # this part of migration was needed when we migrated properties in production DB from o2 to common
+    # now it is broken, because common.Property have extra column default_mean
+    # get_or_create_objs(Property, props_def, 'name_id')
+    # get_or_create_objs(Process, processes_def, 'name_id')
+    pass
 
 
 def delete_data(apps, schema_editor):
