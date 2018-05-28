@@ -40,6 +40,20 @@ services:
     image: poster-web:latest
     command: python -m celery -A poster beat --pidfile= -l debug
     env_file: .env
+    ports:
+      - 5555:5555
+    volumes:
+      - poster-media-data:/media
+    networks:
+      - local
+    depends_on:
+      - poster-web
+
+  poster-flower:
+    container_name: poster-flower
+    image: poster-web:latest
+    command: python -m flower -A poster --port=5555
+    env_file: .env
     volumes:
       - poster-media-data:/media
     networks:
