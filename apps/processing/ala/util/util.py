@@ -7,6 +7,8 @@ from contextlib import closing
 from datetime import timedelta, datetime
 from dateutil.parser import parse
 from decimal import Decimal
+
+from django.contrib.gis.geos import GEOSGeometry
 from django.db.utils import IntegrityError
 
 from apps.processing.ala.models import SamplingFeature, Observation

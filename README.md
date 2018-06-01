@@ -97,6 +97,12 @@ This will display last 20 log messages from `poster_celery_worker` service.
 If you omit the `--tail #` flag it will display **all logs** 
  from **all previous runs**. Use it with caution.
 
+#### Export DB (dump)
+Replace <NAME> for proper variable, this will also prompt for DB password
+```
+pg_dump -h <HOST> -p <PORT> -U <USER> -W --format=custom --no-acl --no-owner <DB_NAME> > (date -I)_poster.dump
+```
+
 #### Import DB dump
 ```
 psql postgres://postgres:postgres@localhost:5432/postgres < /path/to/dump
