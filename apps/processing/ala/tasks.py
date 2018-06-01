@@ -5,6 +5,8 @@ from datetime import date, timedelta
 from celery.task import task, group
 from celery.utils.log import get_task_logger
 
+from django.core.management import call_command
+
 from apps.processing.ala.models import SamplingFeature
 from apps.processing.ala.util import util
 
@@ -37,5 +39,12 @@ def import_station(station_id, day):
         util.create_avgs(station, day)
     except SamplingFeature.DoesNotExist as e:
         logger.error(e)
+    except Exception as e:
+        logger.error(e)
+
+@task(name="ala.import")
+def import_default():
+    try:
+        call_command('ala_import')
     except Exception as e:
         logger.error(e)
