@@ -11,7 +11,8 @@ PROPERTIES = {
             # the model must be subclass of common.AbstractObservation
             'apps.processing.ala.models.Observation': {
 
-                # currently empty, will be used later for optional filter
+                # mandatory, name_id of common.Process
+                'process': 'avg_hour',
             },
         },
 
@@ -24,7 +25,9 @@ PROPERTIES = {
 
     'ground_air_temperature': {
         'observation_providers': {
-            'apps.processing.ala.models.Observation': {},
+            'apps.processing.ala.models.Observation': {
+                'process': 'avg_hour',
+            },
         },
         'value_frequency': 3600,
         'process': 'avg_hour',
