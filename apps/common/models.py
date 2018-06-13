@@ -2,7 +2,6 @@
 # from django.utils.timezone import localtime
 from django.contrib.gis.db import models
 from django.contrib.postgres import fields as pgmodels
-
 from apps.utils.time import format_delta
 
 

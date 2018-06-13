@@ -7,8 +7,11 @@ from luminol.anomaly_detector import AnomalyDetector
 
 def get_timeseries(observed_property, observation_provider_model, feature_of_interest, phenomenon_time_range):
     frequency = settings.APPLICATION_MC.PROPERTIES[observed_property.name_id]["value_frequency"]
+    observation_provider_model_name = observation_provider_model.__module__ \
+                                      + '.' \
+                                      + observation_provider_model.__name__
     process = Process.objects.get(
-        name_id=settings.APPLICATION_MC.PROPERTIES[observed_property.name_id][observation_provider_model]["process"])
+        name_id=settings.APPLICATION_MC.PROPERTIES[observed_property.name_id]['observation_providers'][observation_provider_model_name]["process"])
     observation_model_name = f"{observation_provider_model.__module__}.{observation_provider_model.__name__}"
     timezone = phenomenon_time_range.lower.tzinfo
 
@@ -64,12 +67,12 @@ def get_timeseries(observed_property, observation_provider_model, feature_of_int
 
     dt = result_time_range.upper - result_time_range.lower
 
-    print(dt, frequency, dt/frequency, range(1, int(dt/frequency)))
+    #print(dt, frequency, dt/frequency, range(1, int(dt/frequency)))
 
     for i in range(1, int(dt/frequency)):
         t = result_time_range.lower + i * frequency
         if t not in obs_reduced or obs_reduced[t] is None:
-            print(i, t)
+            #print(i, t)
             obs_reduced[t] = None
             anomalyScore.insert(i, None)
 
