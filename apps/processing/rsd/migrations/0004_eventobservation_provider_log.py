@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('importing', '0004_auto_20180214_0043'),
-        ('rsd', '0002_eventobservation_point_geometry'),
+        ('rsd', '0003_categorycustomgroup'),
     ]
 
     operations = [
