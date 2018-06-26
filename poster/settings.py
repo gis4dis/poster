@@ -60,7 +60,7 @@ APPLICATION_O2_API_KEY = env('APPLICATION_O2_API_KEY', default=None)
 APPLICATION_MC = MC_SETTINGS
 
 # Custom configuration
-CELERY_TIMEZONE = 'UTC'   # Due to https://github.com/celery/celery/issues/4184
+CELERY_TIMEZONE = 'Etc/GMT-1'   # Due to https://github.com/celery/celery/issues/4184, https://github.com/celery/django-celery-beat/issues/109
 CELERY_ENABLE_UTC = True  # Due to https://github.com/celery/celery/issues/4184
 ALLOWED_EXTENSIONS = ['json', 'xml', 'txt']  # importing of data
 IMPORT_ROOT = "import/"  # inside a media bucket
