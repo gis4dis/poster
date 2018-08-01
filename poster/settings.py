@@ -113,10 +113,16 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'poster.urls'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "modules/mc-client/out/static")  # Map client git submodule
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, "modules/mc-client/out/static")  # Map client git submodule
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

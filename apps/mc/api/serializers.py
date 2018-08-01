@@ -25,6 +25,12 @@ class TimeSeriesFeatureSerializer(GeoFeatureModelSerializer):
 
 
 class TimeSeriesSerializer(serializers.Serializer):
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        pass
+
     phenomenon_time_from = serializers.DateTimeField()
     phenomenon_time_to = serializers.DateTimeField()
     value_frequency = serializers.IntegerField()

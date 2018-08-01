@@ -1,0 +1,3 @@
+[submodule "modules/mc-client"]
+	path = modules/mc-client
+	url = https://github.com/gis4dis/mc-client
