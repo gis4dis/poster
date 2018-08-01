@@ -1,16 +1,27 @@
+from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
 
-from django.conf.urls import url
-from rest_framework import routers
-from apps.mc import views
+from apps.common.routers import CustomRouter
+from apps.mc.api.urls import router as mc_router
 
-router = routers.DefaultRouter()
-router.register(r'properties', views.PropertyViewSet)
-router.register(r'timeseries', views.TimeSeriesViewSet, base_name='timeseries')
+# ===== BEGIN API PATTERNS =====
+router = CustomRouter()
+router.extend(mc_router)
 
-urlpatterns = [
-    url(r'^api/v1/', include(router.urls)),
+api_patterns = ([url(r'^', include(router.urls)), ], 'api')
+
+# ===== BEGIN URL PATTERNS =====
+urlpatterns = []
+
+# ===== INCLUDE API PATTERNS =====
+urlpatterns += [
+    url(r'^api/v1/', include(api_patterns)),
+]
+
+# ===== INCLUDE STANDARD PATTERNS =====
+urlpatterns += [
     path('admin/', admin.site.urls),
     path('import/', include('apps.importing.urls')),
+    path('mc/', include('apps.mc.urls')),
 ]
