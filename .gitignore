@@ -2,7 +2,7 @@
 .vscode/
 *.dump
 
-static/
+/static/
 
 db.sqlite3
 .swp

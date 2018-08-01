@@ -23,5 +23,6 @@ urlpatterns += [
 urlpatterns += [
     path('admin/', admin.site.urls),
     path('import/', include('apps.importing.urls')),
-    path('mc/', include('apps.mc.urls')),
+
+    path('map/', include('apps.mc.urls')),
 ]
