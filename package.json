@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "scripts": {
     "postinstall": "npm install --prefix modules/mc-client && npm run build --prefix modules/mc-client && npm run export --prefix modules/mc-client"
-  }
+  },
   "engines" : { "node" : ">=9 <10" }
 }
