@@ -6,6 +6,11 @@ Application for geo-spatial data collection and processing.
 
 * Python 3.2+
 
+Note: To use geo-features for django (GDAL, GEOS, PROJ), you need to have set env variable:
+BUILD_WITH_GEO_LIBRARIES=1
+see:
+https://help.heroku.com/ONEQG0L6/how-do-i-enable-geo-libraries-e-g-geodjango-for-use-with-python
+
 ## Requirements for local development
 * docker (https://www.docker.com/community-edition#/download)
   * Linux post-install: [enable Docker for non-root user](https://docs.docker.com/install/linux/linux-postinstall/)
@@ -116,6 +121,7 @@ Buildpacks are used when building slug for deployment. Below are some examples.
 ```
 https://github.com/heroku/heroku-buildpack-apt
 https://github.com/mojodna/heroku-buildpack-gdal.git
+https://github.com/cyberdelia/heroku-geo-buildpack.git
 https://github.com/heroku/heroku-buildpack-python.git#009d0ddb
 https://github.com/heroku/heroku-buildpack-python.git
 https://github.com/weibeld/heroku-buildpack-run.git
