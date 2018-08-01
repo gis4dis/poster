@@ -1,7 +1,7 @@
 {
-  "name": "foobar-app",
-  "version": "0.1.0",
+  "name": "pster-app",
+  "version": "1.0.0",
   "scripts": {
-    "postinstall": "npm install --prefix modules/mc-client"
+    "postinstall": "npm install --prefix modules/mc-client && npm run build --prefix modules/mc-client && npm run export --prefix modules/mc-client"
   }
 }
