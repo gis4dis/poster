@@ -4,6 +4,8 @@
 
 /static/
 
+modules/mc-client
+
 db.sqlite3
 .swp
 

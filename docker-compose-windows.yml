@@ -7,7 +7,7 @@ services:
     container_name: poster-web
     build: .
     image: poster-web:latest
-    command: bash -c 'sleep 5; while true; do bash runserver.sh; sleep 2; done'
+    command: ./buildpack-run.sh && bash -c 'sleep 5; while true; do bash runserver.sh; sleep 2; done'
     ports:
       - 8000:8000
     env_file: .env
