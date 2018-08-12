@@ -1,3 +1,5 @@
+release: python manage.py migrate
+
 web: gunicorn poster.wsgi -k gevent --log-file - --reload
 #web: "python manage.py runserver 0.0.0.0:$PORT"
 
