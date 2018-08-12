@@ -12,7 +12,7 @@ PROPERTIES = {
             'apps.processing.ala.models.Observation': {
 
                 # mandatory, name_id of common.Process
-                'process': 'avg_hour',
+                'process': 'apps.common.aggregate.arithmetic_mean',
             },
         },
 
@@ -20,10 +20,19 @@ PROPERTIES = {
         'value_frequency': 3600,
     },
 
+    'water_level': {
+        'observation_providers': {
+            'apps.processing.pmo.models.WatercourseObservation': {
+                'process': 'apps.common.aggregate.arithmetic_mean',
+            },
+        },
+        'value_frequency': 3600,
+    },
+
     'ground_air_temperature': {
         'observation_providers': {
             'apps.processing.ala.models.Observation': {
-                'process': 'avg_hour',
+                'process': 'apps.common.aggregate.arithmetic_mean',
             },
         },
         'value_frequency': 3600,
@@ -32,19 +41,10 @@ PROPERTIES = {
     'stream_flow': {
         'observation_providers': {
             'apps.processing.pmo.models.WatercourseObservation': {
-                'process': 'avg_hour',
+                'process': 'apps.common.aggregate.arithmetic_mean',
             },
         },
         'value_frequency': 3600,
-    },
-
-    'water_level': {
-        'observation_providers': {
-            'apps.processing.pmo.models.WatercourseObservation': {
-                'process': 'avg_hour',
-            },
-        },
-        'value_frequency': 3600,
-    },
+    }
 
 }
