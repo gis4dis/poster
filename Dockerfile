@@ -14,9 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --upgrade pip
 RUN pip install pipenv
 
-#ADD requirements.txt /code/
-#RUN pip install -r requirements.txt
-
 ADD Pipfile /code/
 ADD Pipfile.lock /code/
 
