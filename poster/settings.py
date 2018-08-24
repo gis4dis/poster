@@ -72,6 +72,7 @@ LOG_LEVEL = env('DJANGO_LOG_LEVEL', default='ERROR')
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -85,6 +86,13 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'django_celery_results',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.github',
+
+    'apps.social-auth-addons',
 
     'apps.common',
     'apps.utils',
@@ -121,6 +129,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
+            os.path.join(BASE_DIR, "templates"),  # Basic template folder
             os.path.join(BASE_DIR, "modules/mc-client/out/static")  # Map client git submodule
         ],
         'APP_DIRS': True,
@@ -156,6 +165,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+ACCOUNT_ADAPTER = 'poster.account_adapter.NoNewUsersAccountAdapter'
+
+SITE_ID = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/

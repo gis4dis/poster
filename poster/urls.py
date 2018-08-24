@@ -21,6 +21,7 @@ urlpatterns += [
 
 # ===== INCLUDE STANDARD PATTERNS =====
 urlpatterns += [
+    path('accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls),
     path('import/', include('apps.importing.urls')),
 
