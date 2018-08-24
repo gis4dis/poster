@@ -2,45 +2,6 @@
 
 {% block sidebar %}
 
-    <div class="show-on-med-and-down hide-on-large-only">
-        <div class="fixed-action-btn">
-{#            <a class="btn-floating btn-large red button-collapse show-on-large" data-target="slide-out">#}
-{#                <i class="large material-icons">menu</i>#}
-{#            </a>#}
-            <a href="#" data-target="slide-out" class="btn-floating btn-large red sidenav-trigger"><i class="material-icons">menu</i></a>
-        </div>
-    </div>
-
-    <ul id="slide-out" class="sidenav sidenav-fixed">
-
-            <li><div class="blue" id="user-bar">
-            <span class="white-text username"><i class="material-icons medium">account_circle</i> {{ user.get_username }}</span>
-            <div class="right">
-                <a class="waves-effect waves-light btn-floating" href="#"><i class="material-icons left">apps</i></a>
-                <a class="waves-effect waves-light btn-floating" href="#"><i class="material-icons left">power_settings_new</i></a>
-            </div>
-
-        </div></li>
-        <li class="no-padding">
-            <ul class="collapsible collapsible-accordion">
-              <li>
-                <a class="collapsible-header"><i class="material-icons">cloud</i>Link<i class="material-icons">arrow_drop_down</i></a>
-                <div class="collapsible-body">
-                  <ul>
-                    <li><a href="#!">First</a></li>
-                    <li><a href="#!">Second</a></li>
-                    <li><a href="#!">Third</a></li>
-                    <li><a href="#!">Fourth</a></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </li>
-        <li><div class="divider"></div></li>
-
-        {% block sidebar_content %}
-        {% endblock sidebar_content %}
-  </ul>
 {% endblock sidebar %}
 
 {#{% block footer %}#}

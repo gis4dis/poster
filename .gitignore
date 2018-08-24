@@ -2,7 +2,7 @@
 .vscode/
 *.dump
 
-/static/
+/static_files/
 
 modules/mc-client
 

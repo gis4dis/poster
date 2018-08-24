@@ -22,7 +22,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY')
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default='').split(',')
 
 # STATIC_ROOT = env('DJANGO_STATIC_ROOT', default='/static')
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 STATIC_URL = env('DJANGO_STATIC_URL', default='/static/')
 MEDIA_ROOT = env('DJANGO_MEDIA_ROOT', default='/media')
 MEDIA_URL = env('DJANGO_MEDIA_URL', default='/media/')
