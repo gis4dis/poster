@@ -1,0 +1,47 @@
+{% load staticfiles sekizai_tags %}
+<!doctype html>
+<html lang="en">
+<head>
+    <title>{% block title %}Poster{% endblock %}</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-alpha.4/css/materialize.min.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+    {% render_block "css" %}
+
+</head>
+<body>
+
+
+{% block sidebar %}
+{% endblock sidebar %}
+
+{% block header %}
+{% endblock header %}
+
+{% block main %}
+    {% block content %}
+    {% endblock content %}
+{% endblock main %}
+
+{% block footer %}
+
+{% endblock footer %}
+
+<!-- Compiled and minified JavaScript -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-alpha.4/js/materialize.min.js"></script>
+<script type="text/javascript" src="{% static 'js/base.js' %}"></script>
+</body>
+</html>

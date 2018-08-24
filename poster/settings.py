@@ -78,6 +78,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'sekizai',
+
     'rest_framework',
     'rest_framework_gis',
 
@@ -122,7 +124,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'poster.urls'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "modules/mc-client/out/static")  # Map client git submodule
+    os.path.join(BASE_DIR, "modules/mc-client/out/static"),  # Map client git submodule
+    os.path.join(BASE_DIR, "static_files"),  # Map client git submodule
 ]
 
 TEMPLATES = [
@@ -139,12 +142,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'sekizai.context_processors.sekizai',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'poster.wsgi.application'
+
 
 
 # Password validation
