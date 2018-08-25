@@ -124,8 +124,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'poster.urls'
 
 STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # Base static path
     os.path.join(BASE_DIR, "modules/mc-client/out/static"),  # Map client git submodule
-    os.path.join(BASE_DIR, "static_files"),  # Map client git submodule
 ]
 
 TEMPLATES = [
@@ -214,3 +214,4 @@ LOGGING = {
 REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False
 }
+
