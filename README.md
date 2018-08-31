@@ -154,7 +154,7 @@ Standard Django manage.py script
 ### *Procfile*
 Processes defined to be run on container deployment to server
 
-### *requirements.txt*
+### *Pipfile, Pipfile.lock*
 Python dependencies file.
  * used by *https://github.com/heroku/heroku-buildpack-python.git*
 
