@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'sekizai',
+    'widget_tweaks',
 
     'rest_framework',
     'rest_framework_gis',
@@ -94,7 +95,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.github',
 
-    'apps.social-auth-addons',
+    'apps.social_auth_addons',
 
     'apps.common',
     'apps.utils',
@@ -179,6 +180,8 @@ AUTHENTICATION_BACKENDS = (
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_ADAPTER = 'poster.account_adapter.NoNewUsersAccountAdapter'
+
+LOGIN_REDIRECT_URL = "/"
 
 SITE_ID = 1
 

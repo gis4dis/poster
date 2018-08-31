@@ -44,5 +44,6 @@ django_celery_beat = "==1.1.1"
 django_celery_results = "==1.0.1"
 django-allauth = "*"
 django-sekizai = "*"
+django-widget-tweaks = "*"
 
 [dev-packages]

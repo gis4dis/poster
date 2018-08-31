@@ -1,0 +1,91 @@
+{% load widget_tweaks %}
+
+{# Hidden fields #}
+{% for hidden_field in form.hidden_fields %}
+    {{ hidden_field }}
+{% endfor %}
+
+{# Non-field errors #}
+{% if form.non_field_errors %}
+    <div class="uk-alert-danger" uk-alert>
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{# Visible fields #}
+<fieldset class="uk-fieldset">
+
+{% for field in form.visible_fields %}
+    <div class="uk-margin">
+        {{ field.label_tag }}
+
+        {# Form already sent #}
+        {% if form.is_bound %}
+            {% if field.errors %}
+                {% if field.field.widget.input_type == "text" %}
+                    {% render_field field class="uk-textarea uk-form-danger" %}
+
+                {% elif field.field.widget.input_type == "checkbox" %}
+                    {% render_field field class="uk-checkbox uk-form-danger" %}
+
+                {% elif field.field.widget.input_type == "radio" %}
+                    {% render_field field class="uk-radio uk-form-danger" %}
+
+                {% elif field.field.widget.input_type == "select" %}
+                    {% render_field field class="uk-select uk-form-danger" %}
+
+                {% else %}
+                    {% render_field field class="uk-input uk-form-danger" %}
+                {% endif %}
+
+                {% for error in field.errors %}
+                    <div class="uk-alert-danger" uk-alert>
+                        <p>{{ error }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                {% if field.field.widget.input_type == "text" %}
+                    {% render_field field class="uk-textarea uk-form-success" %}
+
+                {% elif field.field.widget.input_type == "checkbox" %}
+                    {% render_field field class="uk-checkbox uk-form-success" %}
+
+                {% elif field.field.widget.input_type == "radio" %}
+                    {% render_field field class="uk-radio uk-form-success" %}
+
+                {% elif field.field.widget.input_type == "select" %}
+                    {% render_field field class="uk-select uk-form-success" %}
+
+                {% else %}
+                    {% render_field field class="uk-input uk-form-success" %}
+                {% endif %}
+            {% endif %}
+
+        {# Form shown first time #}
+        {% else %}
+            {% if field.field.widget.input_type == "text" %}
+                {% render_field field class="uk-textarea" %}
+
+            {% elif field.field.widget.input_type == "checkbox" %}
+                {% render_field field class="uk-checkbox" %}
+
+            {% elif field.field.widget.input_type == "radio" %}
+                {% render_field field class="uk-radio" %}
+
+            {% elif field.field.widget.input_type == "select" %}
+                {% render_field field class="uk-select" %}
+
+            {% else %}
+                {% render_field field class="uk-input" %}
+            {% endif %}
+        {% endif %}
+
+        {% if field.help_text %}
+            <small>{{ field.help_text }}</small>
+        {% endif %}
+    </div>
+
+{% endfor %}
+</fieldset>
