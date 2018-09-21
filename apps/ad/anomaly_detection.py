@@ -1,16 +1,18 @@
-from django.conf import settings
-from apps.common.models import Process
 from datetime import datetime
 from psycopg2.extras import DateTimeTZRange
 
 from luminol.anomaly_detector import AnomalyDetector
+
 import apps.common.lookups
 
-def get_timeseries(observed_property, observation_provider_model, feature_of_interest, phenomenon_time_range):
-    frequency = settings.APPLICATION_MC.PROPERTIES[observed_property.name_id]["value_frequency"]
-    observation_provider_model_name = f"{observation_provider_model.__module__}.{observation_provider_model.__name__}"
-    process = Process.objects.get(
-        name_id=settings.APPLICATION_MC.PROPERTIES[observed_property.name_id]['observation_providers'][observation_provider_model_name]["process"])
+def get_timeseries(
+        observed_property,
+        observation_provider_model,
+        feature_of_interest,
+        phenomenon_time_range,
+        process,
+        frequency):
+
     timezone = phenomenon_time_range.lower.tzinfo
 
     obss = observation_provider_model.objects.filter(
@@ -96,6 +98,7 @@ def get_timeseries(observed_property, observation_provider_model, feature_of_int
         'property_anomaly_rates': anomalyScore,
     }
 
+
 def anomaly_detect(observations, detector_method='bitmap_detector'):
     time_period = None
 
@@ -110,3 +113,6 @@ def anomaly_detect(observations, detector_method='bitmap_detector'):
     score = my_detector.get_all_scores()
 
     return (list(score.itervalues()), time_period)
+
+
+

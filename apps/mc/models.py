@@ -2,7 +2,7 @@
 # from django.utils.timezone import localtime
 from django.contrib.gis.db import models
 from django.db.models.fields import DecimalField
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import HStoreField
 
 
 class TimeSeriesFeature(models.Model):
@@ -23,11 +23,7 @@ class TimeSeriesFeature(models.Model):
         help_text="Spatial information about feature."
     )
 
-    property_values = ArrayField(DecimalField(decimal_places=5, max_digits=15), null=True, blank=True)
-    property_anomaly_rates = ArrayField(DecimalField(decimal_places=5, max_digits=15), null=True, blank=True)
-    phenomenon_time_from = models.DateTimeField()
-    phenomenon_time_to = models.DateTimeField()
-    value_index_shift = models.IntegerField()
+    content = HStoreField(blank=True, null=True, default=dict)
 
     class Meta:
         managed = False

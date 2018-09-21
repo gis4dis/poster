@@ -10,19 +10,35 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = ('name_id', 'name', 'unit')
 
 
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = ('name_id', 'name')
+
+
 class TimeSeriesFeatureSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = TimeSeriesFeature
         geo_field = "geometry"
         id_field = "id"
-        fields = (
-            'id',
-            'id_by_provider',
-            'name',
-            'value_index_shift',
-            'property_values',
-            'property_anomaly_rates'
-        )
+        fields = '__all__'
+
+    def get_properties(self, instance, fields):
+        return {
+            **{
+                'id_by_provider': instance.id_by_provider,
+                'name': instance.name,
+            },
+            **instance.content,
+        }
+
+    def unformat_geojson(self, feature):
+        attrs = {
+            self.Meta.geo_field: feature["geometry"],
+            "content": feature["properties"]
+        }
+
+        return attrs
 
 
 class TimeSeriesSerializer(serializers.Serializer):
@@ -35,4 +51,5 @@ class TimeSeriesSerializer(serializers.Serializer):
     phenomenon_time_from = serializers.DateTimeField()
     phenomenon_time_to = serializers.DateTimeField()
     value_frequency = serializers.IntegerField()
+    properties = serializers.ListField()
     feature_collection = TimeSeriesFeatureSerializer(many=True)

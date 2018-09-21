@@ -10,8 +10,9 @@ from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
 from apps.ad.anomaly_detection import get_timeseries
-from apps.common.models import Property
-from apps.mc.api.serializers import PropertySerializer, TimeSeriesSerializer
+from apps.common.models import Property, Process
+from apps.common.models import Topic
+from apps.mc.api.serializers import PropertySerializer, TimeSeriesSerializer, TopicSerializer
 from apps.mc.models import TimeSeriesFeature
 
 
@@ -73,6 +74,11 @@ def validate_bbox_values(bbox_array):
         raise APIException("BBOX miny is not < maxy")
 
 
+def parse_properties(properties_string):
+    properties_parts = properties_string.rsplit(',')
+    return properties_parts
+
+
 def parse_bbox(bbox_string):
     bbox_parts = bbox_string.rsplit(',')
 
@@ -94,50 +100,69 @@ def parse_bbox(bbox_string):
     return geom_bbox
 
 
-def validate_time_series_feature(item, time_series_from, time_series_to, value_frequency):
-    if time_series_from and time_series_to:
-        time_series_from_s = int(round(time_series_from.timestamp() * 1000))
-        time_series_to_s = int(round(time_series_to.timestamp() * 1000))
+class PropertyViewSet(viewsets.ViewSet):
+    def list(self, request):
+        if 'topic' in request.GET:
+            topic_param = request.GET['topic']
+            topic = settings.APPLICATION_MC.TOPICS.get(topic_param)
 
-        if len(item.property_values) != len(item.property_anomaly_rates):
-            raise APIException(
-                "Error: feature.property_values.length !== feature.property_anomaly_rates.length")
+            if not topic or not Topic.objects.filter(name_id=topic_param).exists():
+                raise APIException('Topic not found.')
 
-        if time_series_from_s % value_frequency != 0:
-            raise APIException(
-                "Error: OUT.phenomenon_time_from::seconds % OUT.value_frequency !== 0")
+            prop_names = list(topic['properties'].keys())
 
-        if (time_series_to_s - time_series_from_s) % value_frequency != 0:
-            raise APIException(
-                "Error: (OUT.phenomenon_time_to::seconds - OUT.phenomenon_time_from::seconds) % OUT.value_frequency != 0")
-
-        values_max_count = (time_series_to - time_series_from).total_seconds() / value_frequency
-
-        if (len(item.property_values) + item.value_index_shift) > values_max_count:
-            raise APIException(
-                "Error: feature.property_values.length + feature.value_index_shift > (phenomenon_time_to::seconds - phenomenon_time_from::seconds) / value_frequency")
+            queryset = Property.objects.filter(name_id__in=prop_names)
+            serializer = PropertySerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            raise APIException("Parameter topic is required")
 
 
+class TopicViewSet(viewsets.ReadOnlyModelViewSet):
+    topics = settings.APPLICATION_MC.TOPICS.keys()
+    queryset = Topic.objects.filter(name_id__in=list(topics))
+    serializer_class = TopicSerializer
 
-class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
-    prop_names = settings.APPLICATION_MC.PROPERTIES.keys()
-    queryset = Property.objects.filter(name_id__in=prop_names)
-    serializer_class = PropertySerializer
 
-
-#TODO otestovat vice provideru v ramci jedne charakteristiky v configu
-# http://localhost:8000/api/v1/timeseries?name_id=water_level&phenomenon_date_from=2017-01-20&phenomenon_date_to=2017-01-27&bbox=1826997.8501,6306589.8927,1846565.7293,6521189.3651
-# http://localhost:8000/api/v1/timeseries?name_id=water_level&phenomenon_date_from=2017-01-20&phenomenon_date_to=2017-01-27
-# http://localhost:8000/api/v1/timeseries?name_id=air_temperature&phenomenon_date_from=2017-01-20&phenomenon_date_to=2017-01-27&bbox=1826997.8501,6306589.8927,1846565.7293,6521189.3651
-# http://localhost:8000/api/v1/timeseries?name_id=air_temperature&phenomenon_date_from=2018-01-20&phenomenon_date_to=2018-09-27
+# http://localhost:8000/api/v2/timeseries/?topic=drought&properties=air_temperature,ground_air_temperature&phenomenon_date_from=2018-01-20&phenomenon_date_to=2018-09-27&bbox=1826997.8501,6306589.8927,1846565.7293,6521189.3651
+# http://localhost:8000/api/v2/timeseries?topic=drought&properties=air_temperature,ground_air_temperature&phenomenon_date_from=2018-01-20&phenomenon_date_to=2018-09-27
 
 class TimeSeriesViewSet(viewsets.ViewSet):
 
     def list(self, request):
-        if 'name_id' in request.GET:
-            name_id = request.GET['name_id']
+        if 'topic' in request.GET:
+            topic = request.GET['topic']
         else:
-            raise APIException("Parameter name_id is required")
+            raise APIException('Parameter topic is required')
+
+        topic_config = settings.APPLICATION_MC.TOPICS.get(topic)
+        if not topic_config or not Topic.objects.filter(name_id=topic).exists():
+            raise APIException('Topic not found.')
+
+        properties = topic_config['properties']
+
+        if 'properties' in request.GET:
+            properties_string = request.GET['properties']
+            param_properties = parse_properties(properties_string)
+
+            for prop in param_properties:
+                if not properties.get(prop):
+                    raise APIException('Property: ' + prop + ' does not exist in config')
+
+                try:
+                    Property.objects.get(name_id=prop)
+                except Property.DoesNotExist:
+                    raise APIException('Property from config not found.')
+
+        else:
+            param_properties = properties.keys()
+            db_filtered_props = []
+            for prop in param_properties:
+                try:
+                    Property.objects.get(name_id=prop)
+                    db_filtered_props.append(prop)
+                except Property.DoesNotExist:
+                    raise APIException('Config has property not present in datbaase.')
 
         if 'phenomenon_date_from' in request.GET:
             phenomenon_date_from = request.GET['phenomenon_date_from']
@@ -156,19 +181,31 @@ class TimeSeriesViewSet(viewsets.ViewSet):
             bbox = request.GET['bbox']
             geom_bbox = parse_bbox(bbox)
 
-        if not (name_id in settings.APPLICATION_MC.PROPERTIES):
-            raise APIException("name_id not found in config")
+        model_props = {}
 
-        config_prop = settings.APPLICATION_MC.PROPERTIES[name_id]
-        config_observation_providers = config_prop['observation_providers']
+        if topic_config:
+            for prop in param_properties:
+                prop_config = properties.get(prop)
+                op = prop_config['observation_providers']
 
-        for key in config_observation_providers:
-            time_series_list = []
-            provider_module, provider_model, error_message = import_models(key)
+                for provider in op:
+                    if provider in model_props:
+                        model_props[provider].append(prop)
+                    else:
+                        model_props[provider] = [prop]
+
+        time_series_list = []
+        phenomenon_time_from = None
+        phenomenon_time_to = None
+        value_frequency = topic_config['value_frequency']
+
+        for model in model_props:
+
+            provider_module, provider_model, error_message = import_models(model)
             if error_message:
-                raise APIException("Importing error - %s : %s" % (key, error_message))
+                raise APIException("Importing error - %s : %s" % (model, error_message))
 
-            path = key.rsplit('.', 1)
+            path = model.rsplit('.', 1)
             provider_module = import_module(path[0])
             provider_model = getattr(provider_module, path[1])
 
@@ -179,27 +216,67 @@ class TimeSeriesViewSet(viewsets.ViewSet):
             else:
                 all_features = feature_of_interest_model.objects.all()
 
-            phenomenon_time_from = None
-            phenomenon_time_to = None
-            value_frequency = None
+            observation_provider_model_name = f"{provider_model.__module__}.{provider_model.__name__}"
 
             for item in all_features:
-                ts = get_timeseries(
-                    observed_property=Property.objects.get(name_id=name_id),
-                    observation_provider_model=provider_model,
-                    feature_of_interest=item,
-                    phenomenon_time_range=pt_range)
+                content = {}
 
-                if ts['phenomenon_time_range'].lower is not None:
-                    if not phenomenon_time_from or phenomenon_time_from > ts['phenomenon_time_range'].lower:
-                        phenomenon_time_from = ts['phenomenon_time_range'].lower
+                hasValues = False
 
-                if ts['phenomenon_time_range'].upper is not None:
-                    if not phenomenon_time_to or phenomenon_time_to > ts['phenomenon_time_range'].upper:
-                        phenomenon_time_to = ts['phenomenon_time_range'].upper
+                f_phenomenon_time_from = None
+                f_phenomenon_time_to = None
 
-                if not value_frequency:
-                    value_frequency = ts['value_frequency']
+                for prop in model_props[model]:
+                    prop_config = topic_config['properties'][prop]
+
+                    try:
+                        process = Process.objects.get(
+                            name_id=prop_config['observation_providers'][observation_provider_model_name]["process"])
+                    except Process.DoesNotExist:
+                        process = None
+
+                    if not process:
+                        raise APIException('Process from config not found.')
+
+                    prop_item = Property.objects.get(name_id=prop)
+
+                    ts = get_timeseries(
+                        observed_property=prop_item,
+                        observation_provider_model=provider_model,
+                        feature_of_interest=item,
+                        phenomenon_time_range=pt_range,
+                        process=process,
+                        frequency=value_frequency
+                    )
+
+                    if ts['phenomenon_time_range'].lower is not None:
+                        if not phenomenon_time_from or phenomenon_time_from > ts['phenomenon_time_range'].lower:
+                            phenomenon_time_from = ts['phenomenon_time_range'].lower
+
+                    if ts['phenomenon_time_range'].upper is not None:
+                        if not phenomenon_time_to or phenomenon_time_to > ts['phenomenon_time_range'].upper:
+                            phenomenon_time_to = ts['phenomenon_time_range'].upper
+
+                    if ts['phenomenon_time_range'].lower is not None:
+                        if not f_phenomenon_time_from or f_phenomenon_time_from > ts['phenomenon_time_range'].lower:
+                            f_phenomenon_time_from = ts['phenomenon_time_range'].lower
+
+                    if ts['phenomenon_time_range'].upper is not None:
+                        if not f_phenomenon_time_to or f_phenomenon_time_to > ts['phenomenon_time_range'].upper:
+                            f_phenomenon_time_to = ts['phenomenon_time_range'].upper
+
+                    feature_prop_dict = {
+                        'values': ts['property_values'],
+                        'anomaly_rates': ts['property_anomaly_rates'],
+                        'phenomenon_time_from': ts['phenomenon_time_range'].lower,
+                        'phenomenon_time_to': ts['phenomenon_time_range'].upper,
+                        'value_index_shift': None
+                    }
+
+                    content[prop] = feature_prop_dict
+
+                    if len(ts['property_values']) > 0:
+                        hasValues = True
 
                 feature_id = path[0] +\
                              "." +\
@@ -207,42 +284,48 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                              ":" +\
                              str(item.id_by_provider)
 
-                f = TimeSeriesFeature(
-                    id=feature_id,
-                    id_by_provider=item.id_by_provider,
-                    name=item.name,
-                    geometry=item.geometry,
-                    property_values=ts['property_values'],
-                    property_anomaly_rates=ts['property_anomaly_rates'],
-                    value_index_shift=None,
-                    phenomenon_time_from=ts['phenomenon_time_range'].lower,
-                    phenomenon_time_to=ts['phenomenon_time_range'].upper
-                )
-                time_series_list.append(f)
+                if hasValues:
+                    f = TimeSeriesFeature(
+                        id=feature_id,
+                        id_by_provider=item.id_by_provider,
+                        name=item.name,
+                        geometry=item.geometry,
+                        content=content
+                    )
+                    time_series_list.append(f)
 
-            for item in time_series_list:
-                if phenomenon_time_from and item.phenomenon_time_from:
-                    diff = phenomenon_time_from - item.phenomenon_time_from
-                    value_index_shift = round(abs(diff.total_seconds()) / value_frequency)
-                    item.value_index_shift = value_index_shift
+        for item in time_series_list:
+            if phenomenon_time_from:
+                for item_prop in item.content:
+                    item_prop_from = item.content[item_prop]['phenomenon_time_from']
 
-                validate_time_series_feature(item, phenomenon_time_from, phenomenon_time_to, value_frequency)
+                    if phenomenon_time_from and item_prop_from:
+                        diff = phenomenon_time_from - item_prop_from
+                        value_index_shift = round(abs(diff.total_seconds()) / value_frequency)
+                        item.content[item_prop]['value_index_shift'] = value_index_shift
+                    else:
+                        item.content[item_prop]['value_index_shift'] = None
 
-            response_data = {
-                'phenomenon_time_from': phenomenon_time_from,
-                'phenomenon_time_to': phenomenon_time_to,
-                'value_frequency': value_frequency,
-                'feature_collection': time_series_list
-            }
+                    try:
+                        del item.content[item_prop]['phenomenon_time_from']
+                    except KeyError:
+                        pass
+
+                    try:
+                        del item.content[item_prop]['phenomenon_time_to']
+                    except KeyError:
+                        pass
+
+        if len(time_series_list) == 0:
+            value_frequency = None
+
+        response_data = {
+            'phenomenon_time_from': phenomenon_time_from,
+            'phenomenon_time_to': phenomenon_time_to,
+            'value_frequency': value_frequency,
+            'feature_collection': time_series_list,
+            'properties': param_properties
+        }
 
         results = TimeSeriesSerializer(response_data).data
         return Response(results)
-
-
-class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
-    prop_names = settings.APPLICATION_MC.PROPERTIES.keys()
-    queryset = Property.objects.filter(name_id__in=prop_names)
-    serializer_class = PropertySerializer
-
-
-

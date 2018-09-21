@@ -5,6 +5,27 @@ from django.contrib.postgres import fields as pgmodels
 from apps.utils.time import format_delta
 
 
+class Topic(models.Model):
+    """Process used to generate the result, e.g. measurement or
+    hourly average."""
+    name_id = models.CharField(
+        help_text="Unique and computer-friendly name of the topic. eg. ('drought')",
+        max_length=100,
+        unique=True,
+    )
+    name = models.CharField(
+        help_text="Human-readable name of the topic.",
+        max_length=50
+    )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = "topics"
+
+    def __str__(self):
+        return self.name
+
+
 class Process(models.Model):
     """Process used to generate the result, e.g. measurement or
     hourly average."""

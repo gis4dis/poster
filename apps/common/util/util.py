@@ -116,7 +116,6 @@ processes_def = [
     ('apps.common.aggregate.circle_mean', {'name': u'circle mean'}),
 ]
 
-
 def get_or_create_props():
     for prop in props_def:
         if 'default_mean' in prop[1]:
@@ -133,3 +132,4 @@ def get_or_create_props():
 
 def get_or_create_processes():
     return get_or_create_objs(Process, processes_def, 'name_id')
+
