@@ -22,7 +22,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY')
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default='').split(',')
 
 # STATIC_ROOT = env('DJANGO_STATIC_ROOT', default='/static')
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 STATIC_URL = env('DJANGO_STATIC_URL', default='/static/')
 MEDIA_ROOT = env('DJANGO_MEDIA_ROOT', default='/media')
 MEDIA_URL = env('DJANGO_MEDIA_URL', default='/media/')
@@ -72,10 +72,14 @@ LOG_LEVEL = env('DJANGO_LOG_LEVEL', default='ERROR')
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'sekizai',
+    'widget_tweaks',
 
     'rest_framework',
     'rest_framework_gis',
@@ -85,6 +89,13 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'django_celery_results',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.github',
+
+    'apps.social_auth_addons',
 
     'apps.common',
     'apps.utils',
@@ -114,13 +125,15 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'poster.urls'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "modules/mc-client/out/static")  # Map client git submodule
+    os.path.join(BASE_DIR, "static"),  # Base static path
+    os.path.join(BASE_DIR, "modules/mc-client/out/static"),  # Map client git submodule
 ]
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
+            os.path.join(BASE_DIR, "templates"),  # Basic template folder
             os.path.join(BASE_DIR, "modules/mc-client/out/static")  # Map client git submodule
         ],
         'APP_DIRS': True,
@@ -130,12 +143,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'sekizai.context_processors.sekizai',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'poster.wsgi.application'
+
 
 
 # Password validation
@@ -156,6 +171,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+ACCOUNT_ADAPTER = 'poster.account_adapter.NoNewUsersAccountAdapter'
+
+LOGIN_REDIRECT_URL = "/"
+
+SITE_ID = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
@@ -189,3 +217,4 @@ LOGGING = {
 REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False
 }
+

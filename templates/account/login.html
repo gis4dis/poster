@@ -1,0 +1,57 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+{% load static sekizai_tags %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+
+
+<div class="uk-section">
+    <div class="uk-container">
+
+        <legend class="uk-legend">Login</legend>
+
+        <hr class="uk-divider-icon">
+
+        <div class="uk-grid uk-child-width-expand@s">
+            <div>
+                <form method="POST">
+                    {% csrf_token %}
+
+                    {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                    {% endif %}
+
+                    {% include 'includes/uikit_form.html' with form=form %}
+
+                    <button type="submit" class="uk-button uk-button-primary">Let me in.</button>
+                </form>
+            </div>
+            <div>
+                <p>Or you can login via you social account:</p>
+                <div>
+                    {% get_providers as socialaccount_providers %}
+
+                    {% for provider in socialaccount_providers %}
+                        {% if provider.id == "github" %}
+                          <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}"
+                             href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}"><i class="fab fa-github-square fa-5x"></i></a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+</div>
+
+
+
+{% endblock %}
