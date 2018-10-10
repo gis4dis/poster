@@ -14,8 +14,7 @@ from apps.common.models import Property, Process
 from apps.common.models import Topic
 from apps.mc.api.serializers import PropertySerializer, TimeSeriesSerializer, TopicSerializer
 from apps.mc.models import TimeSeriesFeature
-from datetime import timedelta, timezone
-UTC_P0100 = timezone(timedelta(hours=1))
+from apps.utils.time import UTC_P0100
 
 
 def import_models(path):
