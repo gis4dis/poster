@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 pwd
 mkdir modules/mc-client -p
 cd modules/mc-client

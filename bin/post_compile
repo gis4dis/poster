@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+DEBUG=true
+
+if [ "$DEBUG" = true ] ; then
+    echo "PWD : $(pwd)"
+    echo "Looking for .pth packages"
+    find .heroku/python/lib/python*/site-packages/ -name "*.pth"
+    echo "------- Original content(s) -------"
+    find .heroku/python/lib/python*/site-packages/ -name "*.pth" -print0 2> /dev/null | xargs -r -0 -n 1 cat
+fi
+
+set +e
+# http://0x2a.at/blog/2008/07/sed--non-greedy-matching/
+find .heroku/python/lib/python*/site-packages/ -name "*.pth" -print0 2> /dev/null | xargs -r -0 -n 1 sed -i -e "s#[^>]*/app/#$(pwd)/#" &> /dev/null
+set -e
+
+if [ "$DEBUG" = true ] ; then
+    echo "------- Replaced content(s) -------"
+    find .heroku/python/lib/python*/site-packages/ -name "*.pth" -print0 2> /dev/null | xargs -r -0 -n 1 cat
+fi
