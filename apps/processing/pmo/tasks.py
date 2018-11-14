@@ -4,7 +4,7 @@ from celery.utils.log import get_task_logger
 from django.core.files.storage import default_storage
 from django.core.management import call_command
 from datetime import date, timedelta, datetime
-from apps.processing.pmo.models import WatercourseObservation
+from apps.processing.pmo.models import WatercourseObservation, WeatherObservation
 from apps.processing.pmo.util import util
 from apps.utils.time import UTC_P0100
 logger = get_task_logger(__name__)
@@ -17,10 +17,10 @@ def import_default(*args):
         logger.error(e)
 
 
-def get_last_record():
+def get_last_record(model):
     try:
-        last_item = WatercourseObservation.objects.all().latest('phenomenon_time_range')
-    except WatercourseObservation.DoesNotExist:
+        last_item = model.objects.all().latest('phenomenon_time_range')
+    except model.DoesNotExist:
         last_item = None
     return last_item
 
@@ -28,16 +28,22 @@ def get_last_record():
 basedir_def = '/import/apps.processing.pmo/'
 
 
-@task(name="pmo.import_observation")
-def import_observation(date_str):
+@task(name="pmo.import_hod_observation")
+def import_hod_observation(date_str):
     date = datetime.strptime(date_str, "%Y%m%d").date()
-    logger.info('Importing file: ' + str(date))
-    util.load(date)
+    logger.info('Importing HOD file: ' + str(date))
+    util.load_hod(date)
 
 
-@task(name="pmo.import_observations")
-def import_observations():
-    last_record = get_last_record()
+@task(name="pmo.import_srazsae_observation")
+def import_srazsae_observation(date_str):
+    date = datetime.strptime(date_str, "%Y%m%d").date()
+    logger.info('Importing srazsae file: ' + str(date))
+    util.load_srazsae(date)
+
+
+def get_dates_to_import(model, file):
+    last_record = get_last_record(model)
     dates_to_import = []
 
     if last_record is not None:
@@ -54,7 +60,7 @@ def import_observations():
 
         while day < day_to:
             day_str = day.strftime("%Y%m%d")
-            path = basedir_def + day_str + '/HOD.dat'
+            path = basedir_def + day_str + '/' + str(file)
             if default_storage.exists(path):
                 dates_to_import.append(day_str)
             day += timedelta(1)
@@ -63,15 +69,30 @@ def import_observations():
         for filename in listed:
             if filename.is_dir:
                 folder_path = filename.object_name
-                path = folder_path + '/HOD.dat'
+                path = folder_path + '/' + str(file)
                 if default_storage.exists(path):
                     day_str = filename.object_name.strip("/").split('/')[-1]
                     dates_to_import.append(day_str)
 
+    return dates_to_import
+
+
+@task(name="pmo.import_observations")
+def import_observations():
+    watercourse_dates_to_import = get_dates_to_import(WatercourseObservation, 'HOD.dat')
+    srazsae_dates_to_import = get_dates_to_import(WeatherObservation, 'srazsae.dat')
+
     try:
-        g = group(import_observation.s(date) for date in dates_to_import)
+        g = group(import_hod_observation.s(date) for date in watercourse_dates_to_import)
         g.apply_async()
     except Exception as e:
         logger.error(e)
+
+    try:
+        g = group(import_srazsae_observation.s(date) for date in srazsae_dates_to_import)
+        g.apply_async()
+    except Exception as e:
+        logger.error(e)
+
 
 
