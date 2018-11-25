@@ -1,5 +1,6 @@
 # Poster
 
+
 Application for geo-spatial data collection and processing. 
 
 ## Requirements for production
