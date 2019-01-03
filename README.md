@@ -47,7 +47,15 @@ docker-compose up
 ```
 - Login with superuser at http://localhost:8000/admin
 
-- You can also import some data with `./dcmanage.sh ala_import` and check it at http://localhost:8000/admin/ala/observation/.
+- You can also import and aggregate some data
+```
+# import some meteorological data
+./dcmanage.sh ala_import
+
+# aggregate it
+./dcmanage.sh aggregate_observations
+```
+You can check imported data at http://localhost:8000/admin/ala/observation/. Notice that aggregation is computed in the background. You can check the state at http://localhost:5555/tasks.
 
 
 ### Other basic commands
