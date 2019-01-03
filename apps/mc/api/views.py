@@ -8,13 +8,16 @@ from psycopg2.extras import DateTimeTZRange
 from rest_framework import viewsets
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+from django.utils.dateparse import parse_datetime
 
 from apps.ad.anomaly_detection import get_timeseries
 from apps.common.models import Property, Process
 from apps.common.models import Topic
-from apps.mc.api.serializers import PropertySerializer, TimeSeriesSerializer, TopicSerializer
 from apps.mc.models import TimeSeriesFeature
+from apps.common.models import TimeSeries
+from apps.mc.api.serializers import PropertySerializer, TimeSeriesSerializer, TopicSerializer
 from apps.utils.time import UTC_P0100
+from apps.common.util.util import generate_intervals
 
 
 def import_models(path):
@@ -128,6 +131,107 @@ class TopicViewSet(viewsets.ReadOnlyModelViewSet):
 # http://localhost:8000/api/v2/timeseries/?topic=drought&properties=air_temperature,ground_air_temperature&phenomenon_date_from=2018-01-20&phenomenon_date_to=2018-09-27&bbox=1826997.8501,6306589.8927,1846565.7293,6521189.3651
 # http://localhost:8000/api/v2/timeseries?topic=drought&properties=air_temperature,ground_air_temperature&phenomenon_date_from=2018-01-20&phenomenon_date_to=2018-09-27
 
+def get_index_shift(time_slots, first_item_from, current_item_from):
+    first_idx = None
+    current_idx = None
+    for idx in range(len(time_slots)):
+        slot = time_slots[idx]
+        if slot.lower == first_item_from:
+            first_idx = idx
+        if slot.lower == current_item_from:
+            current_idx = idx
+
+        if first_idx and current_idx:
+            break
+
+    return current_idx - first_idx
+
+
+def get_value_frequency(t, from_datetime):
+    to = from_datetime + t.frequency + t.frequency
+    result_slots = generate_intervals(
+        timeseries=t,
+        from_datetime=from_datetime,
+        to_datetime=to,
+    )
+
+    if len(result_slots) < 2:
+        return None
+
+    diff = (result_slots[1].lower - result_slots[0].lower).total_seconds()
+    return diff
+
+
+def get_empty_slots(t, pt_range_z):
+    return generate_intervals(
+        timeseries=t,
+        from_datetime=pt_range_z.lower,
+        to_datetime=pt_range_z.upper,
+    )
+
+
+def prepare_data(
+        time_slots,
+        observed_property,
+        observation_provider_model,
+        feature_of_interest,
+        process):
+
+    obss = observation_provider_model.objects.filter(
+        observed_property=observed_property,
+        procedure=process,
+        feature_of_interest=feature_of_interest,
+        phenomenon_time_range__in=time_slots
+    )
+
+    obs_reduced = {obs.phenomenon_time_range.lower.timestamp(): obs for obs in obss}
+
+    observations = []
+    result_time_range_from = None
+    result_time_range_to = None
+
+    last_not_null_index = 0
+    for i in range(len(time_slots) -1, -1, -1):
+        slot = time_slots[i]
+        st = slot.lower.timestamp()
+        if st in obs_reduced and obs_reduced[st] and obs_reduced[st].result is not None:
+            last_not_null_index = i + 1
+            break
+
+    # for slot in time_slots:
+    if last_not_null_index > len(time_slots):
+        last_not_null_index = len(time_slots)
+    for i in range(0, last_not_null_index):
+        slot = time_slots[i]
+        st = slot.lower.timestamp()
+        obs = None
+
+        if st in obs_reduced and obs_reduced[st] and obs_reduced[st].result is not None:
+            obs = obs_reduced[st]
+
+        if len(observations) > 0 or obs:
+            if obs is None:
+                obs = observation_provider_model(
+                    phenomenon_time_range=slot,
+                    observed_property=observed_property,
+                    feature_of_interest=feature_of_interest,
+                    procedure=process,
+                    result=None
+                )
+            observations.append(obs)
+            result_time_range_to = obs.phenomenon_time_range.upper
+            if not result_time_range_from:
+                result_time_range_from = obs.phenomenon_time_range.lower
+
+    return {
+        'observations': observations,
+        'phenomenon_time_range': DateTimeTZRange(
+            result_time_range_from,
+            result_time_range_to
+        )
+    }
+
+
 class TimeSeriesViewSet(viewsets.ViewSet):
 
     def list(self, request):
@@ -137,10 +241,12 @@ class TimeSeriesViewSet(viewsets.ViewSet):
             raise APIException('Parameter topic is required')
 
         topic_config = settings.APPLICATION_MC.TOPICS.get(topic)
+
         if not topic_config or not Topic.objects.filter(name_id=topic).exists():
             raise APIException('Topic not found.')
 
         properties = topic_config['properties']
+        ts_config = topic_config['time_series']
 
         if 'properties' in request.GET:
             properties_string = request.GET['properties']
@@ -177,6 +283,31 @@ class TimeSeriesViewSet(viewsets.ViewSet):
 
         pt_range, day_from, day_to = parse_date_range(phenomenon_date_from, phenomenon_date_to)
 
+        pt_range_z = DateTimeTZRange(
+            pt_range.lower.replace(tzinfo=UTC_P0100),
+            pt_range.upper.replace(tzinfo=UTC_P0100)
+        )
+
+        zero = parse_datetime(ts_config['zero'])
+        frequency = ts_config['frequency']
+        range_from = ts_config['range_from']
+        range_to = ts_config['range_to']
+
+        t = TimeSeries(
+            zero=zero,
+            frequency=frequency,
+            range_from=range_from,
+            range_to=range_to
+        )
+        t.full_clean()
+        t.clean()
+
+        time_slots = get_empty_slots(t, pt_range_z)
+        start = pt_range_z.lower
+        if start < t.zero:
+            start = t.zero
+        value_frequency = get_value_frequency(t, zero)
+
         geom_bbox = None
         if 'bbox' in request.GET:
             bbox = request.GET['bbox']
@@ -198,7 +329,6 @@ class TimeSeriesViewSet(viewsets.ViewSet):
         time_series_list = []
         phenomenon_time_from = None
         phenomenon_time_to = None
-        value_frequency = topic_config['value_frequency']
 
         for model in model_props:
 
@@ -240,19 +370,18 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                         raise APIException('Process from config not found.')
 
                     prop_item = Property.objects.get(name_id=prop)
-             
-                    pt_range_z =  DateTimeTZRange(
-                        pt_range.lower.replace(tzinfo=UTC_P0100),
-                        pt_range.upper.replace(tzinfo=UTC_P0100)
-                    )
 
-                    ts = get_timeseries(
+                    data = prepare_data(
+                        time_slots=time_slots,
                         observed_property=prop_item,
                         observation_provider_model=provider_model,
                         feature_of_interest=item,
-                        phenomenon_time_range=pt_range_z,
-                        process=process,
-                        frequency=value_frequency
+                        process=process
+                    )
+
+                    ts = get_timeseries(
+                        phenomenon_time_range=data['phenomenon_time_range'],
+                        observations=data['observations']
                     )
 
                     if ts['phenomenon_time_range'].lower is not None:
@@ -284,10 +413,10 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                     if len(ts['property_values']) > 0:
                         hasValues = True
 
-                feature_id = path[0] +\
-                             "." +\
-                             feature_of_interest_model.__name__ +\
-                             ":" +\
+                feature_id = path[0] + \
+                             "." + \
+                             feature_of_interest_model.__name__ + \
+                             ":" + \
                              str(item.id_by_provider)
 
                 if hasValues:
@@ -306,8 +435,7 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                     item_prop_from = item.content[item_prop]['phenomenon_time_from']
 
                     if phenomenon_time_from and item_prop_from:
-                        diff = phenomenon_time_from - item_prop_from
-                        value_index_shift = round(abs(diff.total_seconds()) / value_frequency)
+                        value_index_shift = get_index_shift(time_slots, phenomenon_time_from, item_prop_from)
                         item.content[item_prop]['value_index_shift'] = value_index_shift
                     else:
                         item.content[item_prop]['value_index_shift'] = None
