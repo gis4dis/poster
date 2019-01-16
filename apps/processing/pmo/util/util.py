@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # https://github.com/gis4dis/poster/issues/111
 # Substitute '/import/' for django.conf.settings.IMPORT_ROOT
-basedir_def = os.path.join(settings.IMPORT_ROOT, 'apps.processing.pmo/', '')
+basedir_def = os.path.join(settings.IMPORT_ROOT, 'apps.processing.pmo', '')
 
 props_data_types = {
     '17': 'water_level',

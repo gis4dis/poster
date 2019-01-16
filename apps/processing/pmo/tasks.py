@@ -34,7 +34,7 @@ def get_last_record(model):
 
 # https://github.com/gis4dis/poster/issues/111
 # Substitute '/import/' for django.conf.settings.IMPORT_ROOT
-basedir_def = os.path.join(settings.IMPORT_ROOT, 'apps.processing.pmo/', '')
+basedir_def = os.path.join(settings.IMPORT_ROOT, 'apps.processing.pmo', '')
 
 
 @task(name="pmo.import_hod_observation")
