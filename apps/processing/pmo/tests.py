@@ -34,8 +34,8 @@ class SrazsaeImportTestCase(TestCase):
             "phenomenon_time_range")[0].phenomenon_time_range
         timezone = pytz.utc
         expected_time = DateTimeTZRange(
-            datetime(2017, 11, 16, 9, 0, tzinfo=timezone),
-            datetime(2017, 11, 16, 9, 0, tzinfo=timezone),
+            datetime(2017, 11, 12, 9, 0, tzinfo=timezone),
+            datetime(2017, 11, 12, 9, 0, tzinfo=timezone),
             '[]')
 
         self.assertEqual(imported_time, expected_time)
