@@ -58,7 +58,7 @@ TOPICS = {
         },
         'time_series': {
             # datetime in ISO 8601, see https://en.wikipedia.org/wiki/ISO_8601
-            'zero': '2017-09-19T00:00:00+01:00',
+            'zero': '2000-01-01T00:00:00+01:00',
             # time interval in ISO 8601 "format with designators", see https://en.wikipedia.org/wiki/ISO_8601#Durations
             'frequency': 'PT1H',
             'range_from': 'PT0S',
