@@ -25,7 +25,10 @@ TOPICS = {
 
                     'apps.processing.ozp.models.Observation': {
                         'process': 'measure'
-                    }
+                    },
+                    'apps.processing.pmo.models.WeatherObservation': {
+                        'process': 'apps.common.aggregate.arithmetic_mean'
+                    },
                 },
             },
             'precipitation': {
@@ -33,6 +36,9 @@ TOPICS = {
                     'apps.processing.ala.models.Observation': {
                         'process': 'apps.common.aggregate.arithmetic_mean',
                     },
+                    'apps.processing.pmo.models.WeatherObservation': {
+                        'process': 'measure',
+                    }
                 }
             },
             'pm10': {
@@ -95,7 +101,7 @@ TOPICS = {
         },
         'time_series': {
             # datetime in ISO 8601, see https://en.wikipedia.org/wiki/ISO_8601
-            'zero': '2017-09-19T00:00:00+01:00',
+            'zero': '2000-01-01T00:00:00+01:00',
             # time interval in ISO 8601 "format with designators", see https://en.wikipedia.org/wiki/ISO_8601#Durations
             'frequency': 'PT1H',
             'range_from': 'PT0S',
@@ -115,7 +121,7 @@ AGGREGATED_OBSERVATIONS = [
         'time_series': {
 
             # datetime in ISO 8601, see https://en.wikipedia.org/wiki/ISO_8601
-            'zero': '2018-09-19T00:00:00+01:00',
+            'zero': '2000-01-01T00:00:00+01:00',
 
             # time interval in ISO 8601 "format with designators", see https://en.wikipedia.org/wiki/ISO_8601#Durations
             'frequency': 'PT1H',
@@ -135,8 +141,17 @@ AGGREGATED_OBSERVATIONS = [
                 'process': 'measure',
 
                 # mandatory, list of name_ids of common.Property
-                'observed_properties': ['precipitation', 'air_temperature',
-                                        'ground_air_temperature'],
+                'observed_properties': ['precipitation', 'air_temperature'],
+            },
+
+            'apps.processing.pmo.models.WatercourseObservation': {
+                'process': 'measure',
+                'observed_properties': ['stream_flow'],
+            },
+
+            'apps.processing.pmo.models.WeatherObservation': {
+                'process': 'measure',
+                'observed_properties': ['air_temperature'],
             },
         },
     },

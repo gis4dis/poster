@@ -110,11 +110,13 @@ props_def = [
     }),
     ('water_level', {
         "name": 'water level',
-        'unit': 'm'
+        'unit': 'm',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean',
     }),
     ('stream_flow', {
         "name": 'stream flow',
-        'unit': 'm³/s'
+        'unit': 'm³/s',
+        "default_mean": 'apps.common.aggregate.arithmetic_mean',
     })
 ]
 
