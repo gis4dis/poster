@@ -152,7 +152,7 @@ def compute_aggregated_values(aggregate_updated_since_datetime=None):
                     ).order_by('-field_upper')[:1]
 
                     if not range_to_limit_observation:
-                        break
+                        continue
                     range_to_limit = range_to_limit_observation[0].phenomenon_time_range.upper
 
                     range_from_limit_observation = provider_model.objects.filter(
@@ -163,7 +163,7 @@ def compute_aggregated_values(aggregate_updated_since_datetime=None):
                         field_lower=Func(F('phenomenon_time_range'), function='LOWER')
                     ).order_by('field_lower')[:1]
                     if not range_from_limit_observation:
-                        break
+                        continue
 
                     range_from_limit = range_from_limit_observation[0].phenomenon_time_range.lower
 
