@@ -207,7 +207,7 @@ def compute_aggregated_values(aggregate_updated_since_datetime=None):
                         from_value = range_from_limit
                         to_value = range_to_limit
 
-                    if from_value and to_value:
+                    if from_value and to_value and to_value > from_value:
                         from_value = from_value.astimezone(UTC_P0100)
                         to_value = to_value.astimezone(UTC_P0100)
                         # range_from_limit = range_from_limit.astimezone(UTC_P0100)
