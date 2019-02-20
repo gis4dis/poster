@@ -18,10 +18,17 @@ from apps.common.models import TimeSeries
 from apps.mc.api.serializers import PropertySerializer, TimeSeriesSerializer, TopicSerializer
 from apps.utils.time import UTC_P0100
 from apps.common.util.util import generate_intervals
+from django.db.models import Max, Min
+from django.db.models import F, Func, Q
 
 from datetime import timedelta
 
 from functools import partial
+
+from datetime import timedelta
+
+from functools import partial
+
 
 def import_models(path):
     provider_module = None
@@ -237,7 +244,6 @@ def prepare_data(
     feature_of_interest,
     process
 ):
-
     obss = observation_provider_model.objects.filter(
         observed_property=observed_property,
         procedure=process,
@@ -266,6 +272,82 @@ def prepare_data(
             )
         observations.append(obs)
     return observations
+
+
+def get_not_null_ranges(
+    features,
+    props,
+    topic_config,
+    observation_provider_name,
+    provider_model,
+    pt_range_z
+):
+    q_objects = Q()
+
+    prop_items = {}
+    process_items = {}
+
+    for item in features:
+        for prop in props:
+            prop_config = topic_config['properties'][prop]
+            process_name_id = prop_config['observation_providers'][observation_provider_name]["process"]
+
+            try:
+                process = process_items[process_name_id]
+            except KeyError:
+                try:
+                    process = Process.objects.get(name_id=process_name_id)
+                    process_items[process_name_id] = process
+                except Process.DoesNotExist:
+                    process = None
+
+            if not process:
+                raise APIException('Process from config not found.')
+
+            try:
+                prop_item = prop_items[prop]
+            except KeyError:
+                prop_item = Property.objects.get(name_id=prop)
+                prop_items[prop] = prop_item
+
+            q_objects.add(Q(
+                observed_property=prop_item,
+                feature_of_interest=item,
+                procedure=process
+            ), Q.OR)
+
+    q_objects.add(Q(
+        phenomenon_time_range__overlap=pt_range_z
+    ), Q.AND)
+
+    pm = provider_model.objects.filter(
+        q_objects
+    ).values(
+        'feature_of_interest',
+        'procedure',
+        'observed_property',
+    ).annotate(
+        min_b=Min(Func(F('phenomenon_time_range'), function='LOWER')),
+        max_b=Max(Func(F('phenomenon_time_range'), function='UPPER'))
+    ).order_by('feature_of_interest')
+
+    return pm
+
+
+def get_feature_nn_from_list(
+    nn_list,
+    feature,
+    prop_id,
+    process_id
+):
+    for item in nn_list:
+        if item['feature_of_interest'] == feature.id and item['procedure'] == process_id and item['observed_property'] == prop_id:
+            return DateTimeTZRange(
+                item['min_b'],
+                item['max_b']
+            )
+
+    return None
 
 
 def get_not_null_range(
@@ -321,9 +403,17 @@ def get_first_observation_duration(
 
     return None
 
+
+USE_DYNAMIC_TIMESLOTS = True
+ROUND_DECIMAL_SPACES = 3
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 #http://localhost:8000/api/v2/timeseries/?topic=drought&properties=air_temperature&phenomenon_date_from=2018-10-29&phenomenon_date_to=2018-10-30
 class TimeSeriesViewSet(viewsets.ViewSet):
 
+    @method_decorator(cache_page(60*60*12))
     def list(self, request):
         if 'topic' in request.GET:
             topic = request.GET['topic']
@@ -392,8 +482,11 @@ class TimeSeriesViewSet(viewsets.ViewSet):
         t.full_clean()
         t.clean()
 
-        #time_slots = []
-        time_slots = get_empty_slots(t, pt_range_z)
+        if USE_DYNAMIC_TIMESLOTS is True:
+            time_slots = None #[]
+        else:
+            time_slots = get_empty_slots(t, pt_range_z)
+
         value_frequency = get_value_frequency(t, zero)
         value_duration = None
 
@@ -418,6 +511,8 @@ class TimeSeriesViewSet(viewsets.ViewSet):
         time_series_list = []
         phenomenon_time_from = None
         phenomenon_time_to = None
+        process_items = {}
+        prop_items = {}
 
         for model in model_props:
 
@@ -438,32 +533,49 @@ class TimeSeriesViewSet(viewsets.ViewSet):
 
             observation_provider_model_name = f"{provider_model.__module__}.{provider_model.__name__}"
 
+            nn_feature_ranges = get_not_null_ranges(
+                features=all_features,
+                props=model_props[model],
+                topic_config=topic_config,
+                observation_provider_name=observation_provider_model_name,
+                provider_model=provider_model,
+                pt_range_z=pt_range_z
+            )
+
             for item in all_features:
                 content = {}
-                hasValues = False
+
+                has_values = False
                 f_phenomenon_time_from = None
                 f_phenomenon_time_to = None
 
                 for prop in model_props[model]:
                     prop_config = topic_config['properties'][prop]
 
+                    process_name_id = prop_config['observation_providers'][observation_provider_model_name]["process"]
                     try:
-                        process = Process.objects.get(
-                            name_id=prop_config['observation_providers'][observation_provider_model_name]["process"])
-                    except Process.DoesNotExist:
-                        process = None
+                        process = process_items[process_name_id]
+                    except KeyError:
+                        try:
+                            process = Process.objects.get(name_id=process_name_id)
+                            process_items[process_name_id] = process
+                        except Process.DoesNotExist:
+                            process = None
 
                     if not process:
                         raise APIException('Process from config not found.')
 
-                    prop_item = Property.objects.get(name_id=prop)
+                    try:
+                        prop_item = prop_items[prop]
+                    except KeyError:
+                        prop_item = Property.objects.get(name_id=prop)
+                        prop_items[prop] = prop_item
 
-                    data_range = get_not_null_range(
-                        pt_range=pt_range_z,
-                        observed_property=prop_item,
-                        observation_provider_model=provider_model,
-                        feature_of_interest=item,
-                        process=process
+                    data_range = get_feature_nn_from_list(
+                        nn_feature_ranges,
+                        item,
+                        prop_item.id,
+                        process.id
                     )
 
                     if data_range:
@@ -493,25 +605,32 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                             get_observations=get_observations_func
                         )
 
+                        if time_slots is None:
+                            time_slots = feature_time_slots
+
                         if ts['phenomenon_time_range'].lower is not None:
                             if not phenomenon_time_from or phenomenon_time_from > ts['phenomenon_time_range'].lower:
                                 phenomenon_time_from = ts['phenomenon_time_range'].lower
+
+                                if USE_DYNAMIC_TIMESLOTS is True:
+                                    if time_slots != feature_time_slots:
+                                        for idx in range(len(feature_time_slots)):
+                                            slot = feature_time_slots[idx]
+                                            if slot.lower == time_slots[0].lower and slot.upper == \
+                                                    time_slots[0].upper:
+                                                time_slots = feature_time_slots[:idx] + time_slots
+                                                break
 
                         if ts['phenomenon_time_range'].upper is not None:
                             if not phenomenon_time_to or phenomenon_time_to > ts['phenomenon_time_range'].upper:
                                 phenomenon_time_to = ts['phenomenon_time_range'].upper
 
-                        if ts['phenomenon_time_range'].lower is not None:
-                            if not f_phenomenon_time_from or f_phenomenon_time_from > ts['phenomenon_time_range'].lower:
-                                f_phenomenon_time_from = ts['phenomenon_time_range'].lower
-
-                        if ts['phenomenon_time_range'].upper is not None:
-                            if not f_phenomenon_time_to or f_phenomenon_time_to > ts['phenomenon_time_range'].upper:
-                                f_phenomenon_time_to = ts['phenomenon_time_range'].upper
+                        rounded_ar = list(map((lambda val: round(val, ROUND_DECIMAL_SPACES) if val is not None else None),
+                                           ts['property_anomaly_rates']))
 
                         feature_prop_dict = {
                             'values': ts['property_values'],
-                            'anomaly_rates': ts['property_anomaly_rates'],
+                            'anomaly_rates': rounded_ar,
                             'phenomenon_time_from': ts['phenomenon_time_range'].lower,
                             'phenomenon_time_to': ts['phenomenon_time_range'].upper,
                             'value_index_shift': None
@@ -520,7 +639,7 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                         content[prop] = feature_prop_dict
 
                         if len(ts['property_values']) > 0:
-                            hasValues = True
+                            has_values = True
 
                 feature_id = path[0] + \
                     "." + \
@@ -528,7 +647,7 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                     ":" + \
                     str(item.id_by_provider)
 
-                if hasValues:
+                if has_values:
                     f = TimeSeriesFeature(
                         id=feature_id,
                         id_by_provider=item.id_by_provider,
@@ -537,6 +656,9 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                         content=content
                     )
                     time_series_list.append(f)
+
+
+            #print(grouped)
 
         for item in time_series_list:
             if phenomenon_time_from:

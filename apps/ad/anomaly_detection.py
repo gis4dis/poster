@@ -22,6 +22,8 @@ def get_timeseries(
         baseline_time_range=None,
         use_baseline=True
 ):
+    #observations = get_observations(3, 5)
+    #observations = get_observations(0, 0)
 
     # if baseline_time_range is not None:
         # use_baseline = True
