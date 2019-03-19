@@ -1,0 +1,4 @@
+[submodule "src/luminol"]
+	path = src/luminol
+	url = https://github.com/gis4dis/luminol.git
+	branch = bitmap-experimentation
