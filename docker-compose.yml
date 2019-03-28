@@ -75,7 +75,7 @@ services:
     ports:
       - 127.0.0.1:5432:5432
     volumes:
-      - poster-postgres-data:/var/lib/postgresql/data/
+      - ./pgdata:/var/lib/postgresql/data/
 
   poster-redis:
     container_name: poster-redis
@@ -96,7 +96,6 @@ services:
 
 # VOLUMES DEFINITION
 volumes:
-  poster-postgres-data:
   poster-redis-data:
   poster-mongo-data:
   poster-media-data:
