@@ -1,8 +1,10 @@
 from apps.utils.obj import *
-from apps.common.models import Property, Process
+from apps.common.models import Property, Process, TimeSlots
 from psycopg2.extras import DateTimeTZRange
 from datetime import datetime
 from apps.utils.time import UTC_P0100
+from django.conf import settings
+from django.utils.dateparse import parse_datetime
 
 props_def = [
     ('precipitation', {
@@ -131,6 +133,34 @@ processes_def = [
 ]
 
 
+def get_or_create_time_slots():
+    for key in settings.APPLICATION_MC.TIME_SLOTS:
+        ts_config = settings.APPLICATION_MC.TIME_SLOTS[key]
+        zero = parse_datetime(ts_config['zero'])
+        frequency = ts_config['frequency']
+        range_from = ts_config['range_from']
+        range_to = ts_config['range_to']
+        name = ts_config['name']
+
+        TimeSlots.objects.update_or_create(
+            zero=zero,
+            frequency=frequency,
+            range_from=range_from,
+            range_to=range_to,
+            name=name,
+            name_id=key,
+            defaults={
+                'zero': zero,
+                'frequency': frequency,
+                'range_from': range_from,
+                'range_to': range_to,
+                'name': name,
+                'name_id': key,
+            },
+        )
+
+#get_or_create_time_slots()
+
 def get_or_create_props():
     for prop in props_def:
         if 'default_mean' in prop[1]:
@@ -149,6 +179,11 @@ def get_or_create_processes():
     return get_or_create_objs(Process, processes_def, 'name_id')
 
 
+def get_time_slots_by_id(id):
+    time_slots_config = settings.APPLICATION_MC.TIME_SLOTS
+    return time_slots_config.get(id)
+
+
 INTERVALS = {
     "weeks": 604800,    # 60 * 60 * 24 * 7
     "days": 86400,      # 60 * 60 * 24
@@ -159,7 +194,7 @@ INTERVALS = {
 
 
 def generate_intervals(
-    timeseries,             #: TimeSeries
+    timeslots,             #: TimeSeries
     from_datetime,          #: datetime with timezone
     to_datetime,            #: datetime with timezone
     range_from_limit=datetime.min.replace(tzinfo=UTC_P0100),
@@ -184,18 +219,18 @@ def generate_intervals(
         raise Exception('range_to_limit must be after range_from_limit')
 
     first_start = DateTimeTZRange(
-        lower=timeseries.zero + 0 * timeseries.frequency + timeseries.range_from,
-        upper=timeseries.zero + 0 * timeseries.frequency + timeseries.range_to)
+        lower=timeslots.zero + 0 * timeslots.frequency + timeslots.range_from,
+        upper=timeslots.zero + 0 * timeslots.frequency + timeslots.range_to)
 
-    years_frequency = timeseries.frequency.years
-    months_frequency = timeseries.frequency.months
-    days_frequency = timeseries.frequency.days
-    hours_frequency = timeseries.frequency.hours
-    minutes_frequency = timeseries.frequency.minutes
-    seconds_frequency = timeseries.frequency.seconds
+    years_frequency = timeslots.frequency.years
+    months_frequency = timeslots.frequency.months
+    days_frequency = timeslots.frequency.days
+    hours_frequency = timeslots.frequency.hours
+    minutes_frequency = timeslots.frequency.minutes
+    seconds_frequency = timeslots.frequency.seconds
 
     if years_frequency or months_frequency:
-        if timeseries.zero.day > 28:
+        if timeslots.zero.day > 28:
             raise Exception('zero day in month must be less than 28 when frequency contains years or months')
 
         if days_frequency or hours_frequency or minutes_frequency or seconds_frequency:
@@ -243,8 +278,8 @@ def generate_intervals(
     if (first_interval_counter >= 0) and (last_interval_counter > first_interval_counter):
         for N in range(first_interval_counter, last_interval_counter):
             slot = DateTimeTZRange(
-                lower=timeseries.zero + N * timeseries.frequency + timeseries.range_from,
-                upper=timeseries.zero + N * timeseries.frequency + timeseries.range_to)
+                lower=timeslots.zero + N * timeslots.frequency + timeslots.range_from,
+                upper=timeslots.zero + N * timeslots.frequency + timeslots.range_to)
 
             # Check if slot is after from_datetime
             condition = True
