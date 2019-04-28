@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from dateutil.rrule import rrule, DAILY
 
 from apps.processing.ala.util.util import count_observations
-from apps.processing.pmo.monitoring.checks import date_to_ymd
 from apps.utils.time import UTC_P0100
 
 
