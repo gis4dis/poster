@@ -26,20 +26,21 @@ class WatercourseObservationAdmin(admin.ModelAdmin):
 
     list_display = (
         'phenomenon_time_from',
-        'phenomenon_time_duration_for_human',
+        'time_slots',
         'observed_property',
         'feature_of_interest',
         'procedure',
-        'result_for_human',
+        'result_for_human'
     )
     list_filter = (
         DateRangeRangeFilter,
+        ('time_slots', admin.RelatedOnlyFieldListFilter),
         ('observed_property', admin.RelatedOnlyFieldListFilter),
         ('feature_of_interest', admin.RelatedOnlyFieldListFilter),
         ('procedure', admin.RelatedOnlyFieldListFilter),
-        ('result_null_reason', ResultNullReasonFilter),
+        ('result_null_reason', ResultNullReasonFilter)
     )
-    fields = list_display + ('created_at', 'updated_at')
+    fields = list_display + ('phenomenon_time_duration_for_human', 'created_at', 'updated_at')
     readonly_fields = fields
 
 
@@ -63,20 +64,21 @@ class WeatherObservationAdmin(admin.ModelAdmin):
 
     list_display = (
         'phenomenon_time_from',
-        'phenomenon_time_duration_for_human',
+        'time_slots',
         'observed_property',
         'feature_of_interest',
         'procedure',
-        'result_for_human',
+        'result_for_human'
     )
     list_filter = (
         DateRangeRangeFilter,
+        ('time_slots', admin.RelatedOnlyFieldListFilter),
         ('observed_property', admin.RelatedOnlyFieldListFilter),
         ('feature_of_interest', admin.RelatedOnlyFieldListFilter),
         ('procedure', admin.RelatedOnlyFieldListFilter),
-        ('result_null_reason', ResultNullReasonFilter),
+        ('result_null_reason', ResultNullReasonFilter)
     )
-    fields = list_display + ('created_at', 'updated_at')
+    fields = list_display + ('phenomenon_time_duration_for_human', 'created_at', 'updated_at')
     readonly_fields = fields
 
 
