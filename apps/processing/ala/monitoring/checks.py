@@ -14,4 +14,5 @@ def check_ala():
     daily_agg_count = count_observations(two_days_ago, aggregated=True)
     response_dict["measured-today-3"] = daily_count
     response_dict["aggregated-today-3"] = daily_agg_count
+    response_dict["date"] = two_days_ago
     return response_dict
