@@ -35,7 +35,7 @@ class Command(BaseCommand):
                             default='apps.processing.pmo/stanice_tok.csv')
 
     def handle(self, *args, **options):
-        path = os.path.join(settings.IMPORT_ROOT, options['path'], '')
+        path = os.path.join(settings.IMPORT_ROOT, options['path'])
 
         if default_storage.exists(path):
             csv_file = default_storage.open(name=path, mode='r')

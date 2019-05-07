@@ -1,118 +1,108 @@
 from datetime import datetime
 from psycopg2.extras import DateTimeTZRange
-
 from luminol.anomaly_detector import AnomalyDetector
 
-import apps.common.lookups
+
+def observations_to_property_values(observations):
+    return [obs.result for obs in observations]
+
 
 def get_timeseries(
-        observed_property,
-        observation_provider_model,
-        feature_of_interest,
         phenomenon_time_range,
-        process,
-        frequency):
+        num_time_slots,
+        get_observations,
+        detector_method='bitmap_mod',
+        detector_params={
+            "precision": 6,
+            "lag_window_size": 96,
+            "future_window_size": 96,
+            "chunk_size": 2
+        },
+        extend_range=True,
+        baseline_time_range=None,
+        shift=True,
+        use_baseline=True
+):
+    #observations = get_observations(3, 5)
+    #observations = get_observations(0, 0)
 
-    timezone = phenomenon_time_range.lower.tzinfo
+    # if baseline_time_range is not None:
+        # use_baseline = True
+    #     baseline_time_series = observation_provider_model.objects.filter(
+    #         phenomenon_time_range__contained_by=baseline_time_range,
+    #         phenomenon_time_range__duration=frequency,
+    #         phenomenon_time_range__matches=frequency,
+    #         observed_property=observed_property,
+    #         procedure=process,
+    #         feature_of_interest=feature_of_interest
+    #     )
+    #     baseline_reduced = {obs.phenomenon_time_range.lower.timestamp(): obs.result for obs in baseline_time_series}
 
-    obss = observation_provider_model.objects.filter(
-        phenomenon_time_range__contained_by=phenomenon_time_range,
-        phenomenon_time_range__duration=frequency,
-        phenomenon_time_range__matches=frequency,
-        observed_property=observed_property,
-        procedure=process,
-        feature_of_interest=feature_of_interest
-    )
+    lower_ext = 0
+    upper_ext = 0
 
-    obs_reduced = {obs.phenomenon_time_range.lower.timestamp(): obs.result for obs in obss}
+    if extend_range:
+        lower_ext = detector_params["lag_window_size"]
+        upper_ext = detector_params["future_window_size"]
 
-    if len(obs_reduced.keys()) == 0:
+        if use_baseline and shift:
+            upper_ext = 0
+
+        if use_baseline and not shift:
+            lower_ext = int(upper_ext / 2)
+            upper_ext -= lower_ext + 1
+
+    observations = get_observations(lower_ext, upper_ext)
+
+    if not isinstance(observations, list):
+        raise Exception('property_values should be array')
+
+    if len(observations) == 0:
         return {
             'phenomenon_time_range': DateTimeTZRange(),
-            'value_frequency': None,
             'property_values': [],
             'property_anomaly_rates': [],
         }
 
-    result_time_range = DateTimeTZRange(
-        min(list(obs_reduced.keys())),
-        max(list(obs_reduced.keys()))
-    )
+    property_values = observations_to_property_values(observations)
 
-    if len(obs_reduced.keys()) == 1:
+    if len(observations) == 1:
         return {
-            'phenomenon_time_range': DateTimeTZRange(datetime.fromtimestamp(result_time_range.lower).replace(tzinfo=timezone), datetime.fromtimestamp(result_time_range.upper + frequency).replace(tzinfo=timezone)),
-            'value_frequency': frequency,
-            'property_values': [list(obs_reduced.values())[0]],
+            'phenomenon_time_range': phenomenon_time_range,
+            'property_values': property_values,
             'property_anomaly_rates': [0],
         }
 
-    while obs_reduced and obs_reduced[result_time_range.lower] is None:
-        del obs_reduced[result_time_range.lower]
-        if obs_reduced:
-            result_time_range = DateTimeTZRange(
-                min(list(obs_reduced.keys())),
-                result_time_range.upper
-            )
-    while obs_reduced and obs_reduced[result_time_range.upper] is None:
-        del obs_reduced[result_time_range.upper]
-        if obs_reduced:
-            result_time_range = DateTimeTZRange(
-                result_time_range.lower,
-                max(list(obs_reduced.keys()))
-            )
-    
-    if len(obs_reduced.keys()) == 0:
+    if use_baseline and baseline_time_range is None:
+        baseline_time_series = observations
+        baseline_reduced = {obs.phenomenon_time_range.lower.timestamp(): obs.result for obs in baseline_time_series}
+
+    obs_reduced = {obs.phenomenon_time_range.lower.timestamp(): obs.result for obs in observations}
+
+    if (len(property_values) - property_values.count(None) <= 1):
+        property_anomaly_rates = [0 if value is not None else value for value in property_values[lower_ext:lower_ext+num_time_slots]]
+
         return {
-            'phenomenon_time_range': DateTimeTZRange(),
-            'value_frequency': None,
-            'property_values': [],
-            'property_anomaly_rates': [],
-        }
-    
-    if len(obs_reduced.keys()) == 1:
-        return {
-            'phenomenon_time_range': DateTimeTZRange(datetime.fromtimestamp(result_time_range.lower).replace(tzinfo=timezone), datetime.fromtimestamp(result_time_range.upper + frequency).replace(tzinfo=timezone)),
-            'value_frequency': frequency,
-            'property_values': [list(obs_reduced.values())[0]],
-            'property_anomaly_rates': [0],
+            'phenomenon_time_range': phenomenon_time_range,
+            'property_values': property_values[lower_ext:lower_ext+num_time_slots],
+            'property_anomaly_rates': property_anomaly_rates,
         }
 
-    (anomalyScore, anomalyPeriod) = anomaly_detect(obs_reduced)
+    try:
+        baseline_reduced
+    except NameError:
+        detector = AnomalyDetector(obs_reduced, algorithm_name=detector_method, algorithm_params=detector_params, score_only=True)
+    else:
+        detector = AnomalyDetector(obs_reduced, baseline_reduced, algorithm_name=detector_method, algorithm_params=detector_params, score_only=True)
 
-    dt = result_time_range.upper - result_time_range.lower
+    property_anomaly_rates = detector.get_all_scores().values
 
-    property_values = []
-
-    for i in range(0, int(dt/frequency) + 1):
-        t = result_time_range.lower + i * frequency
-        if t not in obs_reduced or obs_reduced[t] is None:
-            obs_reduced[t] = None
-            anomalyScore.insert(i, None)
-        property_values.insert(i, obs_reduced[t])
+    for i in range(len(property_values)):
+        if property_values[i] is None:
+            property_anomaly_rates.insert(i, None)
 
     return {
-        'phenomenon_time_range': DateTimeTZRange(datetime.fromtimestamp(result_time_range.lower).replace(tzinfo=timezone), datetime.fromtimestamp(result_time_range.upper + frequency).replace(tzinfo=timezone)),
-        'value_frequency': frequency,
-        'property_values': property_values,
-        'property_anomaly_rates': anomalyScore,
+        'phenomenon_time_range': phenomenon_time_range,
+        'property_values': property_values[lower_ext:lower_ext+num_time_slots],
+        'property_anomaly_rates': property_anomaly_rates[lower_ext:lower_ext+num_time_slots],
     }
-
-
-def anomaly_detect(observations, detector_method='bitmap_detector'):
-    time_period = None
-
-    my_detector = AnomalyDetector(observations, algorithm_name=detector_method)
-    anomalies = my_detector.get_anomalies()
-
-    if anomalies:
-        time_period = anomalies[0].get_time_window()
-
-    #TODO: the anomaly point
-
-    score = my_detector.get_all_scores()
-
-    return (list(score.itervalues()), time_period)
-
-
-

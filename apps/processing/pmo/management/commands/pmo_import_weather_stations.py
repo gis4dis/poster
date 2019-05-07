@@ -35,7 +35,7 @@ class Command(BaseCommand):
                             default='apps.processing.pmo/stanice_meteo.csv')
 
     def handle(self, *args, **options):
-        path = os.path.join(settings.IMPORT_ROOT, options['path'], '')
+        path = os.path.join(settings.IMPORT_ROOT, options['path'])
 
         if default_storage.exists(path):
             csv_file = default_storage.open(name=path, mode='r')
@@ -77,4 +77,4 @@ class Command(BaseCommand):
                         defaults=defaults
                     )
         else:
-            logger.warning("Error specified path: %s not found", path)
+            raise Exception("Error specified path: %s not found" % path)

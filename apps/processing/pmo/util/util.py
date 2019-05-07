@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # https://github.com/gis4dis/poster/issues/111
 # Substitute '/import/' for django.conf.settings.IMPORT_ROOT
-basedir_def = os.path.join(settings.IMPORT_ROOT, 'apps.processing.pmo/', '')
+basedir_def = os.path.join(settings.IMPORT_ROOT, 'apps.processing.pmo', '')
 
 props_data_types = {
     '17': 'water_level',
@@ -52,7 +52,8 @@ def load_srazsae(day, basedir=basedir_def):
                 result = row[5]
                 station_id = row[0]
                 weather_station = WeatherStation.objects.get(id_by_provider=station_id)
-                parsed = parse(row[2] + " " + row[3])
+                time_str = row[2] + " " + row[3]
+                parsed = datetime.strptime(time_str, "%d.%m.%Y %H:%M")
                 time = parsed.astimezone(UTC_P0100)
 
                 if row[1] == '32':

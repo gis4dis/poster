@@ -10,6 +10,11 @@ urlpatterns = [
     url(
         r'^$',
         TemplateView.as_view(template_name="mc/index.html"),
-        name="mc-app"
+        name="mc-app-home"
+        ),
+    url(
+        r'^topics/drought/$',
+        TemplateView.as_view(template_name="mc/topics/drought/index.html"),
+        name="mc-app-drought"
         ),
 ]

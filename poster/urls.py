@@ -33,10 +33,13 @@ urlpatterns += [
 
 # ===== INCLUDE STANDARD PATTERNS =====
 urlpatterns += [
-    path('', TemplateView.as_view(template_name="base_main.html")),
+    path('', include('apps.mc.urls')),
     path('accounts/', include('allauth.urls')),
     path('admin/', admin.site.urls),
     path('import/', include('apps.importing.urls')),
 
-    path('map/', include('apps.mc.urls')),
+    # path('topics/drought/', include('apps.mc.urls')),
 ]
+
+import debug_toolbar
+urlpatterns = [path('__debug__/', include(debug_toolbar.urls))] + urlpatterns

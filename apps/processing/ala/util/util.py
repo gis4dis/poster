@@ -92,10 +92,10 @@ station_interval = {
 }
 
 
-# 6 prop * 7 per hour * 4 st = 168
-# 6 prop * 5 per hour * 1 st =  30
-# 4 prop * 7 per hour * 1 st =  28
-# TOTAL 226 per hour * 24 = 5424 per day
+# 6 prop * 6 per hour * 4 st = 144
+# 9 prop * 4 per hour * 1 st =  36
+# 4 prop * 6 per hour * 1 st =  24
+# TOTAL 204 per hour * 24 = 4896 per day
 
 # TODO: count is 4896? not 5424. What am I missing?
 def count_observations(day):

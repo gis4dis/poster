@@ -7,9 +7,10 @@ services:
     container_name: poster-web
     build: .
     image: poster-web:latest
-    command: bash -c "./buildpack-run.sh; python manage.py collectstatic --no-input; python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "./buildpack-run.sh; python manage.py collectstatic --no-input;jupyter nbextension enable --py widgetsnbextension; python manage.py runserver 0.0.0.0:8000 & python manage.py shell_plus --notebook"
     ports:
       - 8000:8000
+      - 8001:8888
     env_file: .env
     volumes:
       - .:/code
@@ -75,7 +76,7 @@ services:
     ports:
       - 127.0.0.1:5432:5432
     volumes:
-      - poster-postgres-data:/var/lib/postgresql/data/
+      - ./pgdata:/var/lib/postgresql/data/
 
   poster-redis:
     container_name: poster-redis
@@ -96,7 +97,6 @@ services:
 
 # VOLUMES DEFINITION
 volumes:
-  poster-postgres-data:
   poster-redis-data:
   poster-mongo-data:
   poster-media-data:

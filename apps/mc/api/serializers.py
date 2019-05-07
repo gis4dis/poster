@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.common.models import Property
+from apps.common.models import Property, TimeSlots
 from apps.mc.models import TimeSeriesFeature
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
@@ -13,6 +13,12 @@ class PropertySerializer(serializers.ModelSerializer):
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
+        fields = ('name_id', 'name')
+
+
+class TimeSlotsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeSlots
         fields = ('name_id', 'name')
 
 
@@ -51,5 +57,6 @@ class TimeSeriesSerializer(serializers.Serializer):
     phenomenon_time_from = serializers.DateTimeField()
     phenomenon_time_to = serializers.DateTimeField()
     value_frequency = serializers.IntegerField()
+    value_duration = serializers.IntegerField()
     properties = serializers.ListField()
     feature_collection = TimeSeriesFeatureSerializer(many=True)

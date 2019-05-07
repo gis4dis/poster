@@ -3,6 +3,7 @@
 *.dump
 
 /static_files/
+/pgdata
 
 modules/mc-client
 

@@ -47,7 +47,18 @@ def default_relative_delta_hour():
     return relativedelta(hours=1)
 
 
-class TimeSeries(models.Model):
+class TimeSlots(models.Model):
+    name_id = models.CharField(
+        help_text="Unique and computer-friendly name of time_slots",
+        max_length=100,
+        unique=True,
+    )
+
+    name = models.CharField(
+        help_text="Human-readable name of the time_slots.",
+        max_length=50
+    )
+
     zero = models.DateTimeField(
         null=False,
         default=time_series_default_zero
@@ -84,6 +95,8 @@ class TimeSeries(models.Model):
         if relative_delta_to_total_seconds(self.range_to) <= relative_delta_to_total_seconds(self.range_from):
             raise forms.ValidationError('range_to must be greater than range_from')
 
+    def __str__(self):
+        return self.name
 
 
 
@@ -273,6 +286,15 @@ class AbstractObservation(models.Model):
         decimal_places=3,
         null=True,
         editable=False,
+    )
+
+    time_slots = models.ForeignKey(
+        TimeSlots,
+        help_text="Time_slots used to calc aggregations",
+        null=True,
+        default=None,
+        on_delete=models.DO_NOTHING,
+        related_name="%(app_label)s_%(class)s_related",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

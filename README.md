@@ -30,6 +30,14 @@ cd poster
 cp example.env .env
 ```
 
+- clone any version of your choice of Luminol:
+
+```bash
+cd src/
+git clone git@github.com:gis4dis/luminol.git
+cd -
+```
+
 - If you have PostgreSQL (or something else) running at local port 5432, stop it.
 
 - run
@@ -48,7 +56,15 @@ docker-compose up
 ```
 - Login with superuser at http://localhost:8000/admin
 
-- You can also import some data with `./dcmanage.sh ala_import` and check it at http://localhost:8000/admin/ala/observation/.
+- You can also import and aggregate some data
+```
+# import some meteorological data
+./dcmanage.sh ala_import
+
+# aggregate it
+./dcmanage.sh aggregate_observations
+```
+You can check imported data at http://localhost:8000/admin/ala/observation/. Notice that aggregation is computed in the background. You can check the state at http://localhost:5555/tasks.
 
 
 ### Other basic commands
@@ -175,6 +191,8 @@ https://docs.docker.com/docker-for-windows/install/
 ### preparation
 After cloning repository you need to create custom .env file. Reasonable defaults
  are in example.env so just start with copying this file.
+
+Change the JUPYTER_TOKEN environment variable to a reasonably strong passphrase to avoid serious security threat.
 
 Then because of windows handling all stuff differently then normal OS, you need to
  specify path in the docker-compose-windows.yml. So edit line 15 `- //c/Users/<path to code>:/code` and

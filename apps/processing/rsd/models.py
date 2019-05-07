@@ -170,9 +170,9 @@ class EventObservation(AbstractObservation):
     )
 
     class Meta:
-        unique_together = (('phenomenon_time_range',
-                            'observed_property', 'feature_of_interest',
-                            'procedure', 'id_by_provider', 'category'),)
+        pass
+        # unique_together see migration 0011 and 0012, index rsd_eventobservation_uniq
+
 
 class NumberOfEventsObservation(AbstractObservation):
     """ Represents number of events of single "category custom group" 
@@ -191,7 +191,7 @@ class NumberOfEventsObservation(AbstractObservation):
         null=False,
         on_delete=models.DO_NOTHING,
     )
+
     class Meta:
-        unique_together = (('phenomenon_time_range',
-                            'observed_property', 'feature_of_interest',
-                            'procedure','category_custom_group'),)
+        pass
+        # unique_together see migration 0011 and 0012, index rsd_numberofeventsobservation_uniq
