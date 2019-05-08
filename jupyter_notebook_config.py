@@ -1,5 +1,6 @@
 import sys
 import os
+from django.conf import settings
 
 FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 PROJECT_BASE_PATH = os.path.abspath(os.path.join(FILE_PATH, '..'))
@@ -10,3 +11,8 @@ PROJECT_BASE_PATH = os.path.abspath(os.path.join(FILE_PATH, '..'))
 # imports.
 
 sys.path.insert(1, PROJECT_BASE_PATH)
+
+c = get_config()
+c.NotebookApp.password = settings.JUPYTER_PASSWORD
+c.NotebookApp.token = ''
+
