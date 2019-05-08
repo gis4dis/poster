@@ -24,6 +24,7 @@ class ProcessAdmin(admin.ModelAdmin):
         'name_id',
     )
 
+
 class TimeSlotAdmin(admin.ModelAdmin):
     readonly_fields = (
         'name_id',
@@ -36,6 +37,7 @@ class TimeSlotAdmin(admin.ModelAdmin):
 
 class TopicAdmin(admin.ModelAdmin):
     pass
+
 
 admin.site.register(Property, PropertyAdmin)
 admin.site.register(Process, ProcessAdmin)

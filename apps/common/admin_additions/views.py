@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.views.generic import TemplateView
-from django.conf import settings
 
 
 # noinspection PyUnresolvedReferences

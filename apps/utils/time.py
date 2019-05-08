@@ -30,10 +30,10 @@ def format_delta(delta):
                 'label': 's'
             },
         ]
-        while (parts[-1]['value'] == 0):
+        while parts[-1]['value'] == 0:
             parts.pop()
         parts.reverse()
-        while (parts[-1]['value'] == 0):
+        while parts[-1]['value'] == 0:
             parts.pop()
         parts.reverse()
         parts = map(lambda p: str(p['value']) + ' ' + p['label'], parts)

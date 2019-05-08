@@ -1,6 +1,5 @@
+import logging
 import os
-import stat
-import codecs
 import uuid
 
 from django.core.exceptions import MultipleObjectsReturned
@@ -12,14 +11,13 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
-
 from poster.settings import IMPORT_ROOT, ALLOWED_EXTENSIONS
-
 from .models import Provider, ProviderLog
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ImportView(View):
+    logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
     def post(self, request, code, token, file_name, ext, *args, **kwargs):
@@ -64,7 +62,6 @@ class ImportView(View):
                 is_valid = False
                 is_valid_string = "invalid"
 
-
             # Generate dir path: /<settings.IMPORT_ROOT>/<provider>/<year>/<month>
             # Example:           /import/abc/2017/01
             #
@@ -81,12 +78,14 @@ class ImportView(View):
             try:
                 decoded_body = request.body.decode("UTF-8")
             except Exception as e:
+                self.logger.debug(e, exc_info=True)
                 decoded_body = str(request.body)
 
             decoded_content_type = u""
             try:
                 decoded_content_type = request.content_type.decode("UTF-8")
             except Exception as e:
+                self.logger.debug(e, exc_info=True)
                 decoded_content_type = str(request.content_type)
 
             # Create provider LOG for this request
@@ -107,7 +106,8 @@ class ImportView(View):
             # self._ensure_path(file_dir_path)
             self._write_to_file(file_path, decoded_body)
 
-        except (MultipleObjectsReturned, Provider.DoesNotExist) as ex:
+        except (MultipleObjectsReturned, Provider.DoesNotExist) as e:
+            self.logger.debug(e, exc_info=True)
             # Invalid provider! Don't log this - excess load!
             pass
 
@@ -120,6 +120,7 @@ class ImportView(View):
     #     except os.error as ex:
     #         raise ex
 
+    # noinspection PyMethodMayBeStatic
     def _write_to_file(self, file_path, content):
         try:
             gen_name = default_storage.generate_filename(file_path)

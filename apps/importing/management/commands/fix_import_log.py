@@ -1,11 +1,8 @@
 import logging
-from django.core.management.base import BaseCommand, CommandError
+
+from django.core.management.base import BaseCommand
 
 from apps.importing.models import ProviderLog
-from apps.processing.ala.util import util
-from dateutil.parser import parse
-from datetime import date, timedelta
-from django.db import connection, reset_queries
 
 logger = logging.getLogger(__name__)
 

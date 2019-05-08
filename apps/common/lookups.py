@@ -1,5 +1,5 @@
-from django.db.models import Lookup
 from django.contrib.postgres.fields import DateTimeRangeField
+from django.db.models import Lookup
 from psycopg2.extras import NumericRange
 
 

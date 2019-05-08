@@ -1,3 +1,4 @@
+import logging
 from functools import update_wrapper
 
 from django.contrib import admin
@@ -6,7 +7,10 @@ from django.db.models.functions import Trunc
 
 from .models import Provider, ProviderLog, ReadonlyProviderLog
 
+logger = logging.getLogger(__name__)
 
+
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class FieldsMixin(object):
 
     def add_view(self, request, form_url='', extra_context=None):
@@ -17,8 +21,8 @@ class FieldsMixin(object):
                 self.fields = self.default_fields
             elif hasattr(self, 'fields'):
                 del self.fields
-        except:
-            pass
+        except Exception as e:
+            logger.debug(e, exc_info=True)
 
         try:
             if hasattr(self, 'add_readonly_fields'):
@@ -27,8 +31,9 @@ class FieldsMixin(object):
                 self.readonly_fields = self.default_readonly_fields
             elif hasattr(self, 'readonly_fields'):
                 del self.readonly_fields
-        except:
-            pass
+        except Exception as e:
+            logger.debug(e, exc_info=True)
+
         return super(FieldsMixin, self).add_view(request, form_url, extra_context)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -39,8 +44,8 @@ class FieldsMixin(object):
                 self.fields = self.default_fields
             elif hasattr(self, 'fields'):
                 del self.fields
-        except:
-            pass
+        except Exception as e:
+            logger.debug(e, exc_info=True)
 
         try:
             if hasattr(self, 'change_readonly_fields'):
@@ -49,8 +54,8 @@ class FieldsMixin(object):
                 self.readonly_fields = self.default_readonly_fields
             elif hasattr(self, 'readonly_fields'):
                 del self.readonly_fields
-        except:
-            pass
+        except Exception as e:
+            logger.debug(e, exc_info=True)
 
         return super(FieldsMixin, self).change_view(request, object_id, form_url, extra_context)
 
@@ -69,12 +74,13 @@ class ProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     list_display = ['provider', 'content_type', 'received_time', 'is_valid', ]
     list_filter = ['provider__name', 'content_type', 'received_time', 'is_valid', ]
 
-    fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid',  'uuid4',]
+    fields = ['provider', 'content_type', 'body', ('file_name', 'ext'), 'file_path', 'received_time', 'is_valid',  'uuid4', ]
     readonly_fields = ['uuid4', ]
 
 
 # https://medium.com/@hakibenita/how-to-turn-django-admin-into-a-lightweight-dashboard-a0e0bbf609ad
 # Wonderful way to add some graphs :)
+# noinspection PyProtectedMember
 class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
     change_list_template = 'admin/readonly_provider_change_list.html'
     date_hierarchy = 'received_time'
@@ -114,8 +120,8 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
 
         summary = list(
             qs.values('provider__name')
-              .annotate(**metrics)
-              .order_by('-total')
+                .annotate(**metrics)
+                .order_by('-total')
         )
         response.context_data['summary'] = summary
 
@@ -136,9 +142,9 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
                 period,
                 output_field=DateTimeField(),
             ),
-        )\
-            .values('period')\
-            .annotate(total=Count('id'))\
+        ) \
+            .values('period') \
+            .annotate(total=Count('id')) \
             .order_by('period')
 
         summary_range = summary_over_time.aggregate(
@@ -175,8 +181,8 @@ class ReadonlyProviderLogAdmin(FieldsMixin, admin.ModelAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         urlpatterns = [
-            url(r'^statistics/$', wrap(self.stats_view), name='%s_%s_statistics' % info),
-        ] + urlpatterns
+                          url(r'^statistics/$', wrap(self.stats_view), name='%s_%s_statistics' % info),
+                      ] + urlpatterns
         return urlpatterns
 
 

@@ -1,14 +1,16 @@
 # implement it for phenomenon time
 # https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.list_filter
 
+from datetime import datetime, date, timedelta
+
+from dateutil.parser import parse
 from django.contrib import admin
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
-from datetime import datetime, date, timedelta
-from dateutil.parser import parse
 from psycopg2.extras import DateTimeTZRange
-from apps.utils.time import UTC_P0100
 from psycopg2.extras import NumericRange
+
+from apps.utils.time import UTC_P0100
 
 
 class DateRangeDurationFilter(admin.SimpleListFilter):
@@ -30,7 +32,7 @@ class DateRangeDurationFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         v = self.value()
-        if v == None:
+        if v is None:
             return queryset
 
         if isinstance(v, str):
@@ -84,7 +86,7 @@ class DateRangeRangeFilter(admin.SimpleListFilter):
         # Compare the requested value (either '80s' or '90s')
         # to decide how to filter the queryset.
         v = self.value()
-        if v == None:
+        if v is None:
             return queryset
         dt_from, dt_to = list(map(
             lambda p: datetime.combine(

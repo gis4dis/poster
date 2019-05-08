@@ -20,14 +20,14 @@ class Provider(models.Model):
     def url(self):
         if self.pk is not None:
             url = reverse(
-                    'importing:provider',
-                    kwargs={
-                        'code': self.code,
-                        'token': str(self.token),
-                        'file_name': "data",
-                        'ext': "xml",
-                    }
-                )
+                'importing:provider',
+                kwargs={
+                    'code': self.code,
+                    'token': str(self.token),
+                    'file_name': "data",
+                    'ext': "xml",
+                }
+            )
             return format_html(
                 '<a href={url}>{url}</span>',
                 url=url,
@@ -71,6 +71,7 @@ class ProviderLog(models.Model):
     is_processed.short_description = "Was the Log already processed?"
 
     def parsed_body(self):
+        # noinspection PyPep8Naming
         from bs4 import BeautifulSoup as bs
         import html
         x = bs(self.body)

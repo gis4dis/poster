@@ -5,9 +5,11 @@ from dateutil.rrule import rrule, DAILY
 from django.conf import settings
 from django.core.files.storage import default_storage
 
+from apps.utils.time import UTC_P0100
+
 
 def check_ftp_uploads():
-    today = datetime.now()
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC_P0100)
     yesterday = today - timedelta(days=1)
     month_ago = today - timedelta(days=30)
 

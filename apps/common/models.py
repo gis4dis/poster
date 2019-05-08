@@ -1,13 +1,14 @@
 # from django.db import models
 # from django.utils.timezone import localtime
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
+from django import forms
 from django.contrib.gis.db import models
 from django.contrib.postgres import fields as pgmodels
-from apps.utils.time import format_delta
-from django import forms
 from relativedeltafield import RelativeDeltaField
-from datetime import datetime
-from apps.utils.time import UTC_P0100
-from dateutil.relativedelta import relativedelta
+
+from apps.utils.time import UTC_P0100, format_delta
 
 INTERVALS = {
     "years": 29030400,  # 60 * 60 * 24 * 7 * 4 * 12
@@ -18,6 +19,7 @@ INTERVALS = {
     "minutes": 60,
     "seconds": 1,
 }
+
 
 def relative_delta_to_total_seconds(rel_delta):
     years = rel_delta.years
@@ -97,8 +99,6 @@ class TimeSlots(models.Model):
 
     def __str__(self):
         return self.name
-
-
 
 
 class Topic(models.Model):
@@ -227,6 +227,7 @@ class AbstractObservation(models.Model):
 
     def phenomenon_time_from(self):
         return self.phenomenon_time_range.lower
+
     phenomenon_time_from.admin_order_field = 'phenomenon_time_range'
 
     @property
@@ -237,6 +238,7 @@ class AbstractObservation(models.Model):
     @property
     def phenomenon_time_duration_for_human(self):
         return format_delta(self.phenomenon_time_duration)
+
     phenomenon_time_duration_for_human.fget.short_description = "Phenomenon time duration"
 
     # phenomenon_time_to = models.DateTimeField(
@@ -309,6 +311,7 @@ class AbstractObservation(models.Model):
             reason = self.result_null_reason
             res_str = 'unknown because of ' + reason
         return res_str
+
     result_for_human.fget.short_description = 'Result'
 
     result_null_reason = models.CharField(
@@ -325,4 +328,3 @@ class AbstractObservation(models.Model):
         unique_together = (('phenomenon_time_range',
                             'observed_property', 'feature_of_interest',
                             'procedure'),)
-
