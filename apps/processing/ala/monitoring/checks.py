@@ -8,7 +8,7 @@ from apps.utils.time import UTC_P0100
 
 def check_ala():
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC_P0100)
-    two_days_ago = today - timedelta(days=2)
+    two_days_ago = today - timedelta(days=3)
     response_dict = {}
     daily_count = count_observations(two_days_ago)
     daily_agg_count = count_observations(two_days_ago, aggregated=True)
