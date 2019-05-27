@@ -56,7 +56,7 @@ TOPICS = {
                 }
             }
         },
-        'time_slots': ['1_hour_slot', '24_hour_slot']
+        'time_slots': ['1_hour_slot', '24_hour_slot', '30_days_daily']
     },
     'floods': {
 
@@ -92,7 +92,7 @@ TOPICS = {
                 }
             }
         },
-        'time_slots': ['1_hour_slot', '24_hour_slot']
+        'time_slots': ['1_hour_slot', '24_hour_slot', '30_days_daily']
     },
 
     # ...
@@ -112,7 +112,14 @@ TIME_SLOTS = {
         'range_from': 'PT0S',
         'range_to': 'PT24H',
         'name': '24_hour_slot'
-    }
+    },
+    "30_days_daily": {
+        'zero': '2000-01-01T00:00:00+01:00',
+        'frequency': 'P1D',
+        'range_from': 'P0D',
+        'range_to': 'P30D',
+        'name': '30_days_daily',
+    },
 }
 
 AGGREGATED_OBSERVATIONS = [
@@ -121,7 +128,7 @@ AGGREGATED_OBSERVATIONS = [
     {
 
         # mandatory, definition of common.TimeSeries
-        'time_slots': ['24_hour_slot', '1_hour_slot'],
+        'time_slots': ['24_hour_slot', '1_hour_slot', '30_days_daily'],
 
         # dictionary of observation providers
         # mandatory, at least one provider must be specified

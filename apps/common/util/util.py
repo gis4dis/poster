@@ -143,11 +143,6 @@ def get_or_create_time_slots():
         name = ts_config['name']
 
         TimeSlots.objects.update_or_create(
-            zero=zero,
-            frequency=frequency,
-            range_from=range_from,
-            range_to=range_to,
-            name=name,
             name_id=key,
             defaults={
                 'zero': zero,
