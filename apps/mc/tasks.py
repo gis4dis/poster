@@ -82,7 +82,7 @@ def aggregate_observations(
             time_slots=time_slots
         )
 
-        obs.related_observations.set(observations)
+        # obs.related_observations.set(observations)
     except IntegrityError as e:
         pass
 
