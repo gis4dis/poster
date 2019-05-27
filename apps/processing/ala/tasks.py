@@ -36,7 +36,6 @@ def import_station(station_id, day):
         logger.info('Importing data of {} ALA stations from {}.'.format(station, day))
 
         util.load(station, day)
-        util.create_avgs(station, day)
     except SamplingFeature.DoesNotExist as e:
         logger.error(e)
     except Exception as e:
