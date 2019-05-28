@@ -441,13 +441,15 @@ def get_first_observation_duration(
     observed_property,
     observation_provider_model,
     feature_of_interest,
-    process
+    process,
+    time_slots
 ):
     observations = observation_provider_model.objects.filter(
         observed_property=observed_property,
         procedure=process,
         feature_of_interest=feature_of_interest,
-        phenomenon_time_range__overlap=pt_range
+        phenomenon_time_range__overlap=pt_range,
+        time_slots=time_slots
     ).order_by('phenomenon_time_range')[:1]
 
     if len(observations) > 0:
@@ -654,7 +656,8 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                                 observed_property=prop_item,
                                 observation_provider_model=provider_model,
                                 feature_of_interest=item,
-                                process=process
+                                process=process,
+                                time_slots=t
                             )
 
                         feature_time_slots = get_empty_slots(t, data_range)
