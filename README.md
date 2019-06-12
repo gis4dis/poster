@@ -179,6 +179,30 @@ Python runtime version dependency.
  * used by *https://github.com/heroku/heroku-buildpack-python.git*
 
 
+## Development
+
+### Pycodestyle examples
+Pycodestyle is a tool to check your Python code against some of the style conventions in PEP 8.
+
+### Check single file
+```
+docker-compose run --rm poster-web pycodestyle --first apps/mc/api/views.py
+```
+
+### Check folder
+```
+docker-compose run --rm poster-web pycodestyle directoryname apps
+```
+
+### Autopep8 
+autopep8 automatically formats Python code to conform to the PEP 8 style guide.
+
+### Format single file
+```
+docker-compose run --rm poster-web autopep8 --in-place --aggressive --aggressive apps/mc/api/views.py
+```
+
+
 ## Windows quickstart
 
 ### install prerequisites
