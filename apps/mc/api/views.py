@@ -253,10 +253,10 @@ def get_not_null_ranges(
     ).values(
         'feature_of_interest',
         'procedure',
-        'observed_property',
+        'observed_property'
     ).annotate(
         min_b=Min(Func(F('phenomenon_time_range'), function='LOWER')),
-        max_b=Max(Func(F('phenomenon_time_range'), function='UPPER'))
+        max_b = Max(Func(F('phenomenon_time_range'), function='UPPER'))
     ).order_by('feature_of_interest')
 
     return pm
@@ -604,7 +604,6 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                         content=content
                     )
                     time_series_list.append(f)
-
 
         for item in time_series_list:
             if phenomenon_time_from:

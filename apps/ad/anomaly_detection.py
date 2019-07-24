@@ -7,8 +7,10 @@ from luminol.constants import DEFAULT_BITMAP_MOD_MINIMAL_POINTS_IN_WINDOWS, DEFA
 DEFAULT_ANOMALY_BREAKS = [80, 95]
 DEFAULT_VALUE_BREAKS = [3, 10, 90, 97]
 
+
 def observations_to_property_values(observations):
     return [obs.result for obs in observations]
+
 
 def percentiles(
     values,
