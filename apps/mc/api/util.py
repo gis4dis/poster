@@ -169,7 +169,13 @@ def get_time_slots(topic):
     topic_config = settings.APPLICATION_MC.TOPICS.get(topic)
     timeslots_config = topic_config['time_slots']
     queryset = TimeSlots.objects.filter(name_id__in=timeslots_config)
-    return queryset
+
+    ts_dict = {}
+    for obj in queryset:
+        ts_dict[obj.name_id] = obj
+
+    sorted_queryset = [ts_dict[id] for id in timeslots_config]
+    return  sorted_queryset
 
 
 def get_observation_model_name(topic, property, feature_of_interest):
