@@ -9,12 +9,15 @@ start-d:
 stop:
 	docker-compose stop
 
+stop-poster:
+	docker-compose stop poster-web
+
 restart:
-	docker-compose up --force-recreate --no-deps -d poster-web poster-celery_beat poster-celery_worker
+	docker-compose up --force-recreate --no-deps -d poster-web poster-celery_beat poster-celery_worker poster-flower
 
 rebuild-and-restart:
 	docker-compose build poster-web
-	docker-compose up --force-recreate --no-deps -d poster-web poster-celery_beat poster-celery_worker
+	docker-compose up --force-recreate --no-deps -d poster-web poster-celery_beat poster-celery_worker poster-flower
 
 restart-celery:
 	docker-compose rm -fsv poster-flower
