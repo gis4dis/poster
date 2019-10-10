@@ -1,2 +1,2 @@
 https://github.com/weibeld/heroku-buildpack-run.git
-https://github.com/heroku/heroku-buildpack-python.git
+https://github.com/heroku/heroku-buildpack-python.git#v154
