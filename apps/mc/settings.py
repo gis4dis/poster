@@ -34,17 +34,17 @@ TOPICS = {
             'precipitation': {
                 'observation_providers': {
                     'apps.processing.ala.models.Observation': {
-                        'process': 'apps.common.aggregate.arithmetic_mean',
+                        'process': 'apps.common.aggregate.sum_total',
                     },
                     'apps.processing.pmo.models.WeatherObservation': {
-                        'process': 'measure',
+                        'process': 'apps.common.aggregate.sum_total',
                     }
                 }
             },
             'pm10': {
                 'observation_providers': {
                     'apps.processing.ozp.models.Observation': {
-                        'process': 'measure',
+                        'process': 'apps.common.aggregate.arithmetic_mean',
                     },
                 }
             },
@@ -157,6 +157,11 @@ AGGREGATED_OBSERVATIONS = [
             'apps.processing.pmo.models.WeatherObservation': {
                 'process': 'measure',
                 'observed_properties': ['precipitation', 'air_temperature'],
+            },
+
+            'apps.processing.ozp.models.Observation': {
+                'process': 'measure',
+                'observed_properties': ['pm10'],
             },
 
         },
