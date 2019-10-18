@@ -1,0 +1,1 @@
+web: "jupyter nbextension enable --py widgetsnbextension; python manage.py shell_plus --notebook"

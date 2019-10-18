@@ -1,0 +1,1 @@
+web: "flower -A poster --address=0.0.0.0 --port=$PORT --basic_auth=$FLOWER_USER:$FLOWER_PASSWD"

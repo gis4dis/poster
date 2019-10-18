@@ -19,3 +19,14 @@ if [ "$DEBUG" = true ] ; then
     echo "------- Replaced content(s) -------"
     find .heroku/python/lib/python*/site-packages/ -name "*.pth" -print0 2> /dev/null | xargs -r -0 -n 1 cat
 fi
+
+
+# If there is PROCFILE_NAME env set, move procfile around.
+
+if [ -z "$PROCFILE_NAME" ]
+then
+      echo "\$PROCFILE_NAME is empty. Using default Procfile"
+else
+      echo "\$PROCFILE_NAME is set to $PROCFILE_NAME switching Procfiles"
+      mv $PROCFILE_NAME Procfile
+fi
