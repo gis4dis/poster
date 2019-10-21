@@ -24,7 +24,7 @@ TOPICS = {
                     },
 
                     'apps.processing.ozp.models.Observation': {
-                        'process': 'measure'
+                        'process': 'apps.common.aggregate.arithmetic_mean'
                     },
                     'apps.processing.pmo.models.WeatherObservation': {
                         'process': 'apps.common.aggregate.arithmetic_mean'
