@@ -30,11 +30,11 @@ def get_timeseries(
         phenomenon_time_range,
         num_time_slots,
         get_observations,
-        detector_method='bitmap_mod',
+        detector_method='bitmap_detector',  # LinkedIn bitmap
         detector_params={
-            "precision": 6,
-            "lag_window_size": 96,
-            "future_window_size": 96,
+            "precision": 8,
+            "lag_window_size": 20,
+            "future_window_size": 20,
             "chunk_size": 2
         },
         anomaly_breaks=DEFAULT_ANOMALY_BREAKS,
