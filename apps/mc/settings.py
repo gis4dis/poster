@@ -161,7 +161,7 @@ AGGREGATED_OBSERVATIONS = [
 
             'apps.processing.ozp.models.Observation': {
                 'process': 'measure',
-                'observed_properties': ['pm10'],
+                'observed_properties': ['pm10', 'air_temperature'],
             },
 
         },
