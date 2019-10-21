@@ -67,7 +67,7 @@ def get_dates_to_import(model, file):
 
         day = start_day
 
-        while day < day_to:
+        while day <= day_to:
             day_str = day.strftime("%Y%m%d")
             path = basedir_def + day_str + '/' + str(file)
             if default_storage.exists(path):
