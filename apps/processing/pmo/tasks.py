@@ -59,6 +59,7 @@ def get_dates_to_import(model, file):
         start_day = last_record.phenomenon_time_range.lower
         start_day = start_day.replace(hour=0, minute=0, second=0, microsecond=0)
         start_day = start_day + timedelta(1)
+        start_day = start_day.replace(tzinfo=UTC_P0100)
 
         now = datetime.now()
         now = now.replace(tzinfo=UTC_P0100)
