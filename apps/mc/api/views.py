@@ -570,17 +570,53 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                                 phenomenon_time_from = ts['phenomenon_time_range'].lower
 
                                 if USE_DYNAMIC_TIMESLOTS is True:
-                                    if time_slots != feature_time_slots:
-                                        for idx in range(len(feature_time_slots)):
-                                            slot = feature_time_slots[idx]
-                                            if slot.lower == time_slots[0].lower and slot.upper == \
-                                                    time_slots[0].upper:
-                                                time_slots = feature_time_slots[:idx] + time_slots
-                                                break
+                                    if feature_time_slots[0].lower < time_slots[0].lower:
+                                        if feature_time_slots[-1].upper >= time_slots[0].upper:
+                                            for idx in range(len(feature_time_slots)):
+                                                slot = feature_time_slots[idx]
+                                                if slot.lower == time_slots[0].lower and slot.upper == \
+                                                        time_slots[0].upper:
+                                                    time_slots = feature_time_slots[:idx] + time_slots
+                                                    break
+                                        else:
+                                            inter_slots = get_empty_slots(t, DateTimeTZRange(
+                                                feature_time_slots[-1].lower,
+                                                time_slots[0].upper
+                                            ))
+                                            assert inter_slots[0].lower == feature_time_slots[-1].lower
+                                            assert inter_slots[0].upper == feature_time_slots[-1].upper
+                                            assert inter_slots[-1].lower == time_slots[0].lower
+                                            assert inter_slots[-1].upper == time_slots[0].upper
+                                            inter_slots.pop(0)
+                                            inter_slots.pop()
+                                            time_slots = feature_time_slots + inter_slots + time_slots
 
                         if ts['phenomenon_time_range'].upper is not None:
                             if not phenomenon_time_to or phenomenon_time_to < ts['phenomenon_time_range'].upper:
                                 phenomenon_time_to = ts['phenomenon_time_range'].upper
+
+                                if USE_DYNAMIC_TIMESLOTS is True:
+                                    if feature_time_slots[-1].upper > time_slots[-1].upper:
+                                        if feature_time_slots[0].lower <= time_slots[-1].lower:
+                                            for idx in range(len(feature_time_slots)):
+                                                slot = feature_time_slots[idx]
+                                                if slot.lower == time_slots[-1].lower and slot.upper == \
+                                                        time_slots[-1].upper:
+                                                    time_slots = time_slots + feature_time_slots[idx + 1:]
+                                                    break
+                                        else:
+                                            inter_slots = get_empty_slots(t, DateTimeTZRange(
+                                                time_slots[-1].lower,
+                                                feature_time_slots[0].upper,
+                                            ))
+                                            assert inter_slots[0].lower == time_slots[-1].lower
+                                            assert inter_slots[0].upper == time_slots[-1].upper
+                                            assert inter_slots[-1].lower == feature_time_slots[0].lower
+                                            assert inter_slots[-1].upper == feature_time_slots[0].upper
+                                            inter_slots.pop(0)
+                                            inter_slots.pop()
+                                            time_slots = time_slots + inter_slots + feature_time_slots
+
 
                         rounded_ar = list(map((lambda val: round(val, ROUND_DECIMAL_SPACES) if val is not None else None),
                                            ts['property_anomaly_rates']))
