@@ -116,7 +116,7 @@ props_def = [
         "default_mean": 'apps.common.aggregate.arithmetic_mean',
     }),
     ('stream_flow', {
-        "name": 'stream flow',
+        "name": 'flow rate',
         'unit': 'm³/s',
         "default_mean": 'apps.common.aggregate.arithmetic_mean',
     })
