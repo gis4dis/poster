@@ -15,6 +15,9 @@ stop-poster:
 restart:
 	docker-compose up --force-recreate --no-deps -d poster-web poster-celery_beat poster-celery_worker poster-flower
 
+restart-worker:
+	docker-compose up --force-recreate --no-deps -d poster-celery_worker
+
 rebuild-and-restart:
 	docker-compose build poster-web
 	docker-compose up --force-recreate --no-deps -d poster-web poster-celery_beat poster-celery_worker poster-flower

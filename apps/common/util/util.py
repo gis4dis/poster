@@ -2,6 +2,7 @@ from apps.utils.obj import *
 from apps.common.models import Property, Process, TimeSlots
 from psycopg2.extras import DateTimeTZRange
 from datetime import datetime
+from dateutil import relativedelta
 from apps.utils.time import UTC_P0100
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
@@ -271,9 +272,10 @@ def generate_intervals_internal(
         total_seconds_frequency += minutes_frequency * INTERVALS["minutes"]
         total_seconds_frequency += seconds_frequency * INTERVALS["seconds"]
 
-        diff_until_from = (from_datetime - first_start.lower).total_seconds()
-
-        intervals_before_start = diff_until_from / total_seconds_frequency
+        diff_until_from = (from_datetime - timeslots.range_to - timeslots.zero).total_seconds()
+        intervals_before_start = diff_until_from // total_seconds_frequency
+        if diff_until_from % total_seconds_frequency == 0:
+            intervals_before_start += 1
 
     if to_datetime:
         if years_frequency or months_frequency:
@@ -283,7 +285,7 @@ def generate_intervals_internal(
             intervals_until_end = diff_until_to / total_months_frequency
             intervals_until_end_modulo = diff_until_to % total_months_frequency
         else:
-            diff_until_to = (to_datetime - first_start.lower).total_seconds()
+            diff_until_to = (to_datetime - timeslots.range_from - timeslots.zero).total_seconds()
             intervals_until_end = diff_until_to / total_seconds_frequency
             intervals_until_end_modulo = diff_until_to % total_seconds_frequency
 
