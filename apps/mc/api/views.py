@@ -31,29 +31,34 @@ from functools import partial
 from apps.mc.api.util import get_topics, get_property, import_models, get_observations, get_empty_slots, get_time_slots
 
 
-def parse_date_range(from_string, to_string):
-    if from_string:
+def parse_date(date_string):
+    if date_string:
         try:
-            day_from = parse(from_string)
+            return parse(date_string)
         except ValueError as e:
-            raise APIException("Phenomenon_date_from is not valid")
+            raise APIException("Parse Date errror - date_string is not valid")
 
-    if to_string:
-        try:
-            day_to = parse(to_string)
-            day_to = day_to + relativedelta.relativedelta(days=1)
-        except ValueError as e:
-            raise APIException("Phenomenon_date_to is not valid")
 
-    if day_from > day_to:
-        raise APIException("Phenomenon_date_from bound must be less than or equal phenomenon_date_to")
-
+def create_date_range(day_from, day_to):
     time_range_boundary = '[]' if day_from == day_to else '[)'
 
     pt_range = DateTimeTZRange(
         day_from, day_to, time_range_boundary)
 
-    return pt_range, day_from, day_to
+    return pt_range
+
+
+def parse_date_range(from_string, to_string):
+    if from_string:
+        day_from = parse_date(from_string)
+
+    if to_string:
+        day_to = parse_date(to_string)
+
+    if day_from > day_to:
+        raise APIException("Phenomenon_date_from bound must be less than or equal phenomenon_date_to")
+
+    return create_date_range(day_from, day_to), day_from, day_to
 
 
 def float_bbox_param(value):
@@ -219,6 +224,7 @@ def get_not_null_ranges(
     observation_provider_name,
     provider_model,
     pt_range_z,
+    pt_range_limit_z,
     time_slots
 ):
     q_objects = Q()
@@ -258,6 +264,10 @@ def get_not_null_ranges(
 
     q_objects.add(Q(
         phenomenon_time_range__overlap=pt_range_z
+    ), Q.AND)
+
+    q_objects.add(Q(
+        phenomenon_time_range__contained_by=pt_range_limit_z
     ), Q.AND)
 
     pm = provider_model.objects.filter(
@@ -403,6 +413,31 @@ class TimeSeriesViewSet(viewsets.ViewSet):
         else:
             raise APIException("Parameter phenomenon_date_to is required")
 
+        if 'phenomenon_date_from_limit' in request.GET:
+            phenomenon_date_from_limit = request.GET['phenomenon_date_from_limit']
+        else:
+            phenomenon_date_from_limit = "0001-01-01"
+
+
+        if 'phenomenon_date_to_limit' in request.GET:
+            phenomenon_date_to_limit = request.GET['phenomenon_date_to_limit']
+        else:
+            phenomenon_date_to_limit = phenomenon_date_to
+
+        day_from_limit = parse_date(phenomenon_date_from_limit)
+        day_to_limit = parse_date(phenomenon_date_to_limit)
+
+        if day_from_limit > day_to_limit:
+            raise APIException(
+                "Phenomenon_date_from_limit bound must be less than or equal phenomenon_date_to_limit")
+
+        pt_range_limit = create_date_range(day_from_limit, day_to_limit + timedelta(days=+1))
+
+        pt_range_z_limit = DateTimeTZRange(
+            pt_range_limit.lower.replace(tzinfo=UTC_P0100),
+            pt_range_limit.upper.replace(tzinfo=UTC_P0100)
+        )
+
         pt_range, day_from, day_to = parse_date_range(phenomenon_date_from, phenomenon_date_to)
 
         pt_range_z = DateTimeTZRange(
@@ -495,6 +530,7 @@ class TimeSeriesViewSet(viewsets.ViewSet):
                 observation_provider_name=observation_provider_model_name,
                 provider_model=provider_model,
                 pt_range_z=pt_range_z,
+                pt_range_limit_z=pt_range_z_limit,
                 time_slots=t
             )
 
