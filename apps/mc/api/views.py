@@ -54,12 +54,12 @@ def parse_date_range(from_string, to_string):
 
     if to_string:
         day_to = parse_date(to_string)
+        day_to = day_to + relativedelta.relativedelta(days=1)
 
     if day_from > day_to:
         raise APIException("Phenomenon_date_from bound must be less than or equal phenomenon_date_to")
 
     return create_date_range(day_from, day_to), day_from, day_to
-
 
 def float_bbox_param(value):
     try:
@@ -269,7 +269,7 @@ def get_not_null_ranges(
     q_objects.add(Q(
         phenomenon_time_range__contained_by=pt_range_limit_z
     ), Q.AND)
-
+    
     pm = provider_model.objects.filter(
         q_objects
     ).values(
@@ -431,7 +431,10 @@ class TimeSeriesViewSet(viewsets.ViewSet):
             raise APIException(
                 "Phenomenon_date_from_limit bound must be less than or equal phenomenon_date_to_limit")
 
-        pt_range_limit = create_date_range(day_from_limit, day_to_limit + timedelta(days=+1))
+        pt_range_limit = create_date_range(
+            day_from_limit,
+            day_to_limit + relativedelta.relativedelta(days=1)
+        )
 
         pt_range_z_limit = DateTimeTZRange(
             pt_range_limit.lower.replace(tzinfo=UTC_P0100),
